@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -68,7 +67,6 @@ class _MyHomePageState extends State<MyHomePage> {
   int _time = 0;
   Icon _fabIcon;
   Stream<int> _stream;
-  double _min;
 
   ///
   ///
@@ -85,12 +83,6 @@ class _MyHomePageState extends State<MyHomePage> {
   ///
   @override
   Widget build(BuildContext context) {
-    _min = math.min(
-          MediaQuery.of(context).size.height,
-          MediaQuery.of(context).size.width,
-        ) *
-        (MediaQuery.of(context).size.aspectRatio >= 1 ? 0.5 : 0.75);
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Pomodoro Timer'),
