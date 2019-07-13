@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -62,6 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
   DateTime _startTime;
   Icon _fabIcon;
   Stream<int> _stream;
+  double _min;
 
   ///
   ///
@@ -79,6 +81,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     config = Config();
+
+    _min = math.min(
+          MediaQuery.of(context).size.height,
+          MediaQuery.of(context).size.width,
+        ) *
+        0.75;
 
     return Scaffold(
       appBar: AppBar(
@@ -110,9 +118,9 @@ class _MyHomePageState extends State<MyHomePage> {
             stream: _stream,
             builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
               if (snapshot.hasData) {
-                return Timer(data: snapshot.data, time: _time);
+                return Timer(data: snapshot.data, time: _time, min: _min);
               }
-              return Timer(data: 0, time: 0);
+              return Timer(data: 0, time: 0, min: _min);
             },
           ),
           Padding(
@@ -265,8 +273,9 @@ class _MyHomePageState extends State<MyHomePage> {
 class Timer extends StatelessWidget {
   final int data;
   final int time;
+  final double min;
 
-  const Timer({Key key, this.data, this.time}) : super(key: key);
+  const Timer({Key key, this.data, this.time, this.min}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -285,23 +294,28 @@ class Timer extends StatelessWidget {
       children: <Widget>[
         Center(
           child: SizedBox(
-            width: 150,
-            height: 150,
+            width: min,
+            height: min,
             child: CircularProgressIndicator(
-              strokeWidth: 8,
+              strokeWidth: min * 0.025,
               backgroundColor: Colors.black26,
               value: _value,
             ),
           ),
         ),
         Center(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 55),
-            child: Text(
-              _text,
-              key: Key('timeText'),
-              style: Theme.of(context).textTheme.display1,
-              textAlign: TextAlign.center,
+          child: SizedBox(
+            width: min * 0.85,
+            height: min,
+            child: FittedBox(
+              child: Text(
+                _text,
+                key: Key('timeText'),
+                style: TextStyle(
+                  color: Color.lerp(Colors.red, Colors.black54, _value ?? 1),
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
         ),
