@@ -123,16 +123,20 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: _getChipByStatus(config.status),
                     ),
                     Expanded(
-                      child: StreamBuilder(
-                        stream: _stream,
-                        builder:
-                            (BuildContext context, AsyncSnapshot<int> snapshot) {
-                          if (snapshot.hasData) {
-                            return Timer(
-                                data: snapshot.data, time: _time, min: _min);
-                          }
-                          return Timer(data: 0, time: 0, min: _min);
-                        },
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: FittedBox(
+                          child: StreamBuilder(
+                            stream: _stream,
+                            builder: (BuildContext context,
+                                AsyncSnapshot<int> snapshot) {
+                              if (snapshot.hasData) {
+                                return Timer(data: snapshot.data, time: _time);
+                              }
+                              return Timer(data: 0, time: 0);
+                            },
+                          ),
+                        ),
                       ),
                     ),
                     Padding(
@@ -302,25 +306,41 @@ class _MyHomePageState extends State<MyHomePage> {
       case Status.stopped:
         return Chip(
           key: Key('stoppedChip'),
-          label: Text('Stopped'),
+          label: Text(
+            'Stopped',
+            textScaleFactor: 1.5,
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Colors.black26,
         );
       case Status.task:
         return Chip(
           key: Key('workingChip'),
-          label: Text('Working'),
+          label: Text(
+            'Working',
+            textScaleFactor: 1.5,
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Colors.green,
         );
       case Status.short:
         return Chip(
           key: Key('shortPauseChip'),
-          label: Text('Short Pause'),
+          label: Text(
+            'Short Pause',
+            textScaleFactor: 1.5,
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Colors.amber,
         );
       case Status.long:
         return Chip(
           key: Key('longPauseChip'),
-          label: Text('Long Pause'),
+          label: Text(
+            'Long Pause',
+            textScaleFactor: 1.5,
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Colors.orange,
         );
     }
@@ -356,9 +376,8 @@ class _MyHomePageState extends State<MyHomePage> {
 class Timer extends StatelessWidget {
   final int data;
   final int time;
-  final double min;
 
-  const Timer({Key key, this.data, this.time, this.min}) : super(key: key);
+  const Timer({Key key, this.data, this.time}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -374,30 +393,28 @@ class Timer extends StatelessWidget {
     }
 
     return Stack(
+      alignment: AlignmentDirectional.center,
       children: <Widget>[
-        Center(
-          child: SizedBox(
-            width: min,
-            height: min,
-            child: CircularProgressIndicator(
-              strokeWidth: min * 0.025,
-              backgroundColor: Colors.black26,
-              value: _value,
-            ),
+        SizedBox(
+          width: 100,
+          height: 100,
+          child: CircularProgressIndicator(
+            strokeWidth: 3,
+            backgroundColor: Colors.black26,
+            value: _value,
           ),
         ),
-        Center(
-          child: SizedBox(
-            width: min * 0.85,
-            height: min,
+        SizedBox(
+          width: 100,
+          height: 100,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: FittedBox(
               child: Text(
                 _text,
-                key: Key('timeText'),
                 style: TextStyle(
                   color: Color.lerp(Colors.red, Colors.black54, _value ?? 1),
                 ),
-                textAlign: TextAlign.center,
               ),
             ),
           ),
