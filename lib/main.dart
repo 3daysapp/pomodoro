@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(MyApp());
 
@@ -13,12 +14,21 @@ class Config {
   int shortPause;
   int longPause;
   int taskQtd;
+  int circle;
+  int taskCount;
+  Status status;
+  Status lastStatus;
+  DateTime startTime;
 
   Config({
     this.taskTime = 25 * 60 * 1000,
     this.shortPause = 5 * 60 * 1000,
     this.longPause = 25 * 60 * 1000,
     this.taskQtd = 4,
+    this.circle = 0,
+    this.taskCount = 0,
+    this.status = Status.stopped,
+    this.lastStatus,
   });
 }
 
@@ -53,14 +63,9 @@ class MyHomePage extends StatefulWidget {
 ///
 ///
 class _MyHomePageState extends State<MyHomePage> {
-  Config config;
+  Config config = Config();
 
   int _time = 0;
-  int _circle = 0;
-  int _taskCount = 0;
-  Status _status = Status.stopped;
-  Status _lastStatus;
-  DateTime _startTime;
   Icon _fabIcon;
   Stream<int> _stream;
   double _min;
@@ -80,13 +85,11 @@ class _MyHomePageState extends State<MyHomePage> {
   ///
   @override
   Widget build(BuildContext context) {
-    config = Config();
-
     _min = math.min(
           MediaQuery.of(context).size.height,
           MediaQuery.of(context).size.width,
         ) *
-        0.75;
+        (MediaQuery.of(context).size.aspectRatio >= 1 ? 0.5 : 0.75);
 
     return Scaffold(
       appBar: AppBar(
@@ -96,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.only(right: 12),
             child: Chip(
               label: Text(
-                _circle.toString(),
+                config.circle.toString(),
                 style: TextStyle(
                     color: Theme.of(context).accentColor,
                     fontWeight: FontWeight.bold),
@@ -106,29 +109,44 @@ class _MyHomePageState extends State<MyHomePage> {
           )
         ],
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: _getChipByStatus(_status),
-          ),
-          StreamBuilder(
-            stream: _stream,
-            builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-              if (snapshot.hasData) {
-                return Timer(data: snapshot.data, time: _time, min: _min);
+      body: FutureBuilder(
+          future: loadFromSharedPreferences(),
+          builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+            if (snapshot.hasData) {
+              if (snapshot.data) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: _getChipByStatus(config.status),
+                    ),
+                    Expanded(
+                      child: StreamBuilder(
+                        stream: _stream,
+                        builder:
+                            (BuildContext context, AsyncSnapshot<int> snapshot) {
+                          if (snapshot.hasData) {
+                            return Timer(
+                                data: snapshot.data, time: _time, min: _min);
+                          }
+                          return Timer(data: 0, time: 0, min: _min);
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: _getTaskCount(),
+                    ),
+                  ],
+                );
               }
-              return Timer(data: 0, time: 0, min: _min);
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: _getTaskCount(),
-          ),
-        ],
-      ),
+            }
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }),
       floatingActionButton: FloatingActionButton(
         key: Key('faButton'),
         onPressed: () {
@@ -143,45 +161,114 @@ class _MyHomePageState extends State<MyHomePage> {
   ///
   ///
   ///
-  void _fabPress() {
-    switch (_status) {
+  Future<bool> loadFromSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    config.taskTime = prefs.getInt('task_time') ?? 1500000;
+    config.shortPause = prefs.getInt('short_pause') ?? 300000;
+    config.longPause = prefs.getInt('long_pause') ?? 1500000;
+    config.taskQtd = prefs.getInt('task_qtd') ?? 4;
+    config.circle = prefs.getInt('circle') ?? 0;
+    config.taskCount = prefs.getInt('task_count') ?? 0;
+    config.status = Status.values.elementAt(prefs.getInt('status') ?? 0);
+
+    int lastStatus = prefs.getInt('last_status') ?? null;
+    if (lastStatus == null) {
+      config.lastStatus = null;
+    } else {
+      config.lastStatus = Status.values.elementAt(lastStatus);
+    }
+
+    int startTime = prefs.get('start_time') ?? null;
+    if (startTime == null) {
+      config.startTime = null;
+    } else {
+      config.startTime = DateTime.fromMillisecondsSinceEpoch(startTime);
+    }
+
+    checkTime();
+
+    return true;
+  }
+
+  ///
+  ///
+  ///
+  Future<void> saveToSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    await prefs.setInt('task_time', config.taskTime);
+    await prefs.setInt('short_pause', config.shortPause);
+    await prefs.setInt('long_pause', config.longPause);
+    await prefs.setInt('task_qtd', config.taskQtd);
+    await prefs.setInt('circle', config.circle);
+    await prefs.setInt('task_count', config.taskCount);
+    await prefs.setInt('status', config.status.index);
+
+    int lastStatus = -1;
+    if (config.lastStatus != null) {
+      lastStatus = config.lastStatus.index;
+    }
+    await prefs.setInt('last_status', lastStatus);
+
+    await prefs.setInt('start_time', config.startTime.millisecondsSinceEpoch);
+  }
+
+  ///
+  ///
+  ///
+  void _fabPress() async {
+    await loadFromSharedPreferences();
+
+    switch (config.status) {
       case Status.stopped:
-        if (_lastStatus == null ||
-            _lastStatus == Status.long ||
-            _lastStatus == Status.short) {
-          _status = Status.task;
+        if (config.lastStatus == null ||
+            config.lastStatus == Status.long ||
+            config.lastStatus == Status.short) {
+          config.status = Status.task;
         } else {
-          if (_taskCount < config.taskQtd) {
-            _status = Status.short;
+          if (config.taskCount < config.taskQtd) {
+            config.status = Status.short;
           } else {
-            _status = Status.long;
+            config.status = Status.long;
           }
         }
-        _lastStatus = Status.stopped;
+        config.lastStatus = Status.stopped;
         _fabIcon = Icon(Icons.check);
-        _startTime = DateTime.now();
+        config.startTime = DateTime.now();
         break;
       case Status.task:
-        _lastStatus = Status.task;
+        config.lastStatus = Status.task;
         _fabIcon = Icon(Icons.play_arrow);
-        _status = Status.stopped;
-        _taskCount++;
+        config.status = Status.stopped;
+        config.taskCount++;
         break;
       case Status.short:
-        _lastStatus = Status.short;
+        config.lastStatus = Status.short;
         _fabIcon = Icon(Icons.play_arrow);
-        _status = Status.stopped;
+        config.status = Status.stopped;
         break;
       case Status.long:
-        _lastStatus = Status.long;
+        config.lastStatus = Status.long;
         _fabIcon = Icon(Icons.play_arrow);
-        _status = Status.stopped;
-        _taskCount = 0;
-        _circle++;
+        config.status = Status.stopped;
+        config.taskCount = 0;
+        config.circle++;
         break;
     }
 
-    switch (_status) {
+    checkTime();
+
+    await saveToSharedPreferences();
+
+    setState(() {});
+  }
+
+  ///
+  ///
+  ///
+  void checkTime() {
+    switch (config.status) {
       case Status.task:
         _time = config.taskTime;
         break;
@@ -194,20 +281,16 @@ class _MyHomePageState extends State<MyHomePage> {
       default:
         break;
     }
-
-    setState(() {});
   }
 
   ///
   ///
   ///
   int _decreaseTime(int value) {
-    if (_status == Status.stopped) {
+    if (config.status == Status.stopped) {
       return null;
     }
-
-    Duration duration = DateTime.now().difference(_startTime);
-
+    Duration duration = DateTime.now().difference(config.startTime);
     return _time - duration.inMilliseconds;
   }
 
@@ -251,7 +334,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(config.taskQtd, (i) => i)
-          .map((i) => i < _taskCount
+          .map((i) => i < config.taskCount
               ? Icon(
                   Icons.check_circle,
                   key: Key("task${i}Icon"),
@@ -282,7 +365,7 @@ class Timer extends StatelessWidget {
     String _text;
     double _value;
 
-    if (data == 0 && time == 0) {
+    if (time == 0) {
       _text = 'Waiting';
       _value = null;
     } else {
