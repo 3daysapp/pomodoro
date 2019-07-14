@@ -317,8 +317,8 @@ class _MyHomePageState extends State<MyHomePage> {
   ///
   ///
   Widget _getTaskCount() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
       children: List.generate(config.taskQtd, (i) => i)
           .map((i) => i < config.taskCount
               ? Icon(

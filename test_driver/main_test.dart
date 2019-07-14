@@ -32,9 +32,7 @@ void main() {
 
       await driver.waitFor(fab);
 
-      await screenshot(driver, config, '0');
-
-      await driver.tap(fab);
+      await screenshot(driver, config, 'Waiting');
 
       /// Starting the circle.
 
@@ -43,47 +41,66 @@ void main() {
       print('Task Qtd: $taskQtd');
 
       for (int t = 1; t <= taskQtd; t++) {
+        print("t: $t");
+
+        /// Waiting
+        print('Waiting');
+        await driver.waitFor(stoppedChip);
+        await Future.delayed(Duration(seconds: 2));
+        await driver.tap(fab);
+
         /// Working
+        print('Working');
         await driver.waitFor(workingChip);
         if (t == 1) {
-          await screenshot(driver, config, '1');
+          await screenshot(driver, config, 'Working');
         }
         await Future.delayed(Duration(seconds: 5));
         await driver.tap(fab);
 
+        /// Task Count
+        print('Task Count');
+        SerializableFinder taskOk = find.byValueKey("taskOk${t - 1}Icon");
+        await driver.waitFor(taskOk);
+
         /// Waiting
+        print('Waiting 2');
         await driver.waitFor(stoppedChip);
-        await Future.delayed(Duration(seconds: 5));
+        await Future.delayed(Duration(seconds: 2));
         await driver.tap(fab);
 
         if (t < taskQtd) {
           /// Short Pause
+          print('Short Pause');
           await driver.waitFor(shortPauseChip);
           if (t == 1) {
-            await screenshot(driver, config, '2');
+            await screenshot(driver, config, 'Short Pause');
           }
-
-          // TODO: Verificar se o tarefa foi marcada corretamente.
-
           await Future.delayed(Duration(seconds: 5));
           await driver.tap(fab);
         } else {
           /// Long Pause
+          print('Long Pause');
           await driver.waitFor(longPauseChip);
-          await screenshot(driver, config, '3');
+          await screenshot(driver, config, 'Long Pause');
           await Future.delayed(Duration(seconds: 5));
           await driver.tap(fab);
         }
-
-        /// Waiting
-        await driver.waitFor(stoppedChip);
-        await Future.delayed(Duration(seconds: 2));
-        await driver.tap(fab);
       }
 
-      // TODO: Verificar se o ciclo mudou.
+      /// Circle Change
+      print('Circle Change');
+      SerializableFinder circleText = find.byValueKey('circleText');
+      expect(await driver.getText(circleText), '1');
 
-      await driver.waitFor(workingChip);
+      /// Task Empty
+      for (int i = 0; i < taskQtd; i++) {
+        print('Task Empty $i');
+        SerializableFinder taskEmpty = find.byValueKey("taskEmpty${i}Icon");
+        await driver.waitFor(taskEmpty, timeout: Duration(seconds: 2));
+      }
+
+      await driver.waitFor(stoppedChip);
 
       print('The End');
 
