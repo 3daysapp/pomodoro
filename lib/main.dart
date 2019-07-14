@@ -1,35 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:pomodoro/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(MyApp());
-
-enum Status { stopped, task, short, long }
-
-///
-///
-///
-class Config {
-  int taskTime;
-  int shortPause;
-  int longPause;
-  int taskQtd;
-  int circle;
-  int taskCount;
-  Status status;
-  Status lastStatus;
-  DateTime startTime;
-
-  Config({
-    this.taskTime = 25 * 60 * 1000,
-    this.shortPause = 5 * 60 * 1000,
-    this.longPause = 25 * 60 * 1000,
-    this.taskQtd = 4,
-    this.circle = 0,
-    this.taskCount = 0,
-    this.status = Status.stopped,
-    this.lastStatus,
-  });
-}
 
 ///
 ///
@@ -91,7 +64,8 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.only(right: 12),
             child: Chip(
               label: Text(
-                config.circle.toString(),
+                (config.circle ?? 0).toString(),
+                key: Key('circleText'),
                 style: TextStyle(
                     color: Theme.of(context).accentColor,
                     fontWeight: FontWeight.bold),
@@ -349,12 +323,12 @@ class _MyHomePageState extends State<MyHomePage> {
           .map((i) => i < config.taskCount
               ? Icon(
                   Icons.check_circle,
-                  key: Key("task${i}Icon"),
+                  key: Key("taskOk${i}Icon"),
                   color: Colors.deepOrange,
                 )
               : Icon(
                   Icons.brightness_1,
-                  key: Key("task${i}Icon"),
+                  key: Key("taskEmpty${i}Icon"),
                   color: Colors.black26,
                 ))
           .toList(),
@@ -371,6 +345,9 @@ class Timer extends StatelessWidget {
 
   const Timer({Key key, this.data, this.time}) : super(key: key);
 
+  ///
+  ///
+  ///
   @override
   Widget build(BuildContext context) {
     String _text;
@@ -378,7 +355,7 @@ class Timer extends StatelessWidget {
 
     if (time == 0) {
       _text = 'Waiting';
-      _value = null;
+      _value = 0;
     } else {
       _text = _formatTime(data);
       _value = (data - 1000) / time;
