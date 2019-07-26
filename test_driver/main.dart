@@ -15,5 +15,5 @@ void main() {
 
   enableFlutterDriverExtension(handler: dataHandler);
 
-  runApp(MyApp());
+  runApp(PomodoroTimer());
 }

@@ -1,40 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:pomodoro/config.dart';
+import 'package:pomodoro/settings.dart';
+import 'package:pomodoro/time.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(PomodoroTimer());
 
 ///
 ///
 ///
-class MyApp extends StatelessWidget {
+class PomodoroTimer extends StatelessWidget {
+  // FIXME: Quando o programa é carregado pela primeira vez, os dados não foram salvos nas preferências.
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Pomodoro Timer',
-      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.deepOrange,
       ),
-      home: MyHomePage(),
+      home: Home(),
+      routes: getRoutes(context),
     );
+  }
+
+  static Map<String, WidgetBuilder> getRoutes(BuildContext context) {
+    return {
+      '/home': (_) => Home(),
+      '/settings': (_) => Settings(),
+    };
   }
 }
 
 ///
 ///
 ///
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key}) : super(key: key);
+class Home extends StatefulWidget {
+  Home({Key key}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomeState createState() => _HomeState();
 }
 
 ///
 ///
 ///
-class _MyHomePageState extends State<MyHomePage> {
+class _HomeState extends State<Home> {
   Config config = Config();
 
   int _time = 0;
@@ -74,6 +85,35 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           )
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            UserAccountsDrawerHeader(
+              accountName: Text('Pomodoro Timer'),
+              accountEmail: null,
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.black45,
+                child: Text(
+                  'PO',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 38.0,
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Settings'),
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed('/settings');
+              },
+            )
+          ],
+        ),
       ),
       body: FutureBuilder(
           future: loadFromSharedPreferences(),
@@ -357,7 +397,7 @@ class Timer extends StatelessWidget {
       _text = 'Waiting';
       _value = 0;
     } else {
-      _text = _formatTime(data);
+      _text = Time.format(data);
       _value = (data - 1000) / time;
     }
 
@@ -390,32 +430,5 @@ class Timer extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  ///
-  ///
-  ///
-  String _formatTime(int millis) {
-    String s = "";
-
-    if (millis < 0) {
-      s = "-";
-      millis = millis.abs() + 1000;
-    }
-
-    int seconds = millis ~/ 1000 % 60;
-
-    int minutes = millis ~/ 60000 % 60;
-
-    s = "$s${minutes.toString().padLeft(2, '0')}:"
-        "${seconds.toString().padLeft(2, '0')}";
-
-    int hours = millis ~/ 3600000 % 60;
-
-    if (hours > 0) {
-      s = "${hours.toString()}:$s";
-    }
-
-    return s;
   }
 }
