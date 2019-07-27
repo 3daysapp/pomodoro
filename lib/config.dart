@@ -1,3 +1,6 @@
+///
+///
+///
 enum Status { stopped, task, short, long }
 
 ///
@@ -19,6 +22,13 @@ class Config {
   Status status;
   Status lastStatus;
   DateTime startTime;
+  int advanceNotification;
 
   Config._internal();
 }
+
+// TODO: Implement Progress Notification.
+// TODO: Implement Vibration.
+// TODO: Reset App.
+// TODO: App version in drawer.
+// FIXME: Verify FAB icon on app load.

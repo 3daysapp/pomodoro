@@ -1,29 +1,43 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pomodoro/config.dart';
 import 'package:pomodoro/settings.dart';
-import 'package:pomodoro/time.dart';
+import 'package:pomodoro/tempo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-void main() => runApp(PomodoroTimer());
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+///
+///
+///
+void main() {
+  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  runApp(PomodoroTimer());
+}
 
 ///
 ///
 ///
 class PomodoroTimer extends StatelessWidget {
-  // FIXME: Quando o programa é carregado pela primeira vez, os dados não foram salvos nas preferências.
-
+  ///
+  ///
+  ///
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Pomodoro Timer',
       theme: ThemeData(
-        primarySwatch: Colors.deepOrange,
+        primarySwatch: Colors.red,
       ),
       home: Home(),
       routes: getRoutes(context),
     );
   }
 
+  ///
+  ///
+  ///
   static Map<String, WidgetBuilder> getRoutes(BuildContext context) {
     return {
       '/home': (_) => Home(),
@@ -46,6 +60,8 @@ class Home extends StatefulWidget {
 ///
 ///
 class _HomeState extends State<Home> {
+//  var platform = MethodChannel('crossingthestreams.io/resourceResolver');
+
   Config config = Config();
 
   int _time = 0;
@@ -58,8 +74,54 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('pomodoro_icon');
+
+    var initializationSettingsIOS = IOSInitializationSettings(
+        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+
+    var initializationSettings = InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
+
     _fabIcon = Icon(Icons.play_arrow);
     _stream = Stream<int>.periodic(Duration(milliseconds: 500), _decreaseTime);
+  }
+
+  ///
+  ///
+  ///
+  Future<void> onSelectNotification(String payload) async {
+    if (payload != null) {
+      debugPrint('notification payload: ' + payload);
+    }
+
+    _fabPress();
+  }
+
+  ///
+  ///
+  ///
+  Future<void> onDidReceiveLocalNotification(
+      int id, String title, String body, String payload) async {
+    // display a dialog with the notification details, tap ok to go to another page
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: Text('Ok'),
+            onPressed: _fabPress,
+          )
+        ],
+      ),
+    );
   }
 
   ///
@@ -115,8 +177,8 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
-      body: FutureBuilder(
-          future: loadFromSharedPreferences(),
+      body: StreamBuilder(
+          stream: loadFromSharedPreferences().asStream(),
           builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data) {
@@ -159,9 +221,7 @@ class _HomeState extends State<Home> {
           }),
       floatingActionButton: FloatingActionButton(
         key: Key('faButton'),
-        onPressed: () {
-          _fabPress();
-        },
+        onPressed: _fabPress,
         tooltip: 'Pomodoro Control',
         child: _fabIcon,
       ),
@@ -180,6 +240,7 @@ class _HomeState extends State<Home> {
     config.taskQtd = prefs.getInt('task_qtd') ?? 4;
     config.circle = prefs.getInt('circle') ?? 0;
     config.taskCount = prefs.getInt('task_count') ?? 0;
+    config.advanceNotification = prefs.getInt('advance_notification') ?? 10000;
     config.status = Status.values.elementAt(prefs.getInt('status') ?? 0);
 
     int lastStatus = prefs.getInt('last_status') ?? null;
@@ -213,6 +274,7 @@ class _HomeState extends State<Home> {
     await prefs.setInt('task_qtd', config.taskQtd);
     await prefs.setInt('circle', config.circle);
     await prefs.setInt('task_count', config.taskCount);
+    await prefs.setInt('advance_notification', config.advanceNotification);
     await prefs.setInt('status', config.status.index);
 
     int lastStatus = -1;
@@ -236,11 +298,14 @@ class _HomeState extends State<Home> {
             config.lastStatus == Status.long ||
             config.lastStatus == Status.short) {
           config.status = Status.task;
+          await _scheduleNotification(config.taskTime);
         } else {
           if (config.taskCount < config.taskQtd) {
             config.status = Status.short;
+            await _scheduleNotification(config.shortPause);
           } else {
             config.status = Status.long;
+            await _scheduleNotification(config.longPause);
           }
         }
         config.lastStatus = Status.stopped;
@@ -252,11 +317,13 @@ class _HomeState extends State<Home> {
         _fabIcon = Icon(Icons.play_arrow);
         config.status = Status.stopped;
         config.taskCount++;
+        await _cancelAllNotifications();
         break;
       case Status.short:
         config.lastStatus = Status.short;
         _fabIcon = Icon(Icons.play_arrow);
         config.status = Status.stopped;
+        await _cancelAllNotifications();
         break;
       case Status.long:
         config.lastStatus = Status.long;
@@ -264,6 +331,7 @@ class _HomeState extends State<Home> {
         config.status = Status.stopped;
         config.taskCount = 0;
         config.circle++;
+        await _cancelAllNotifications();
         break;
     }
 
@@ -291,6 +359,61 @@ class _HomeState extends State<Home> {
       default:
         break;
     }
+  }
+
+  ///
+  ///
+  ///
+  Future<void> _scheduleNotification(int millis) async {
+    var scheduledNotificationDateTime = DateTime.now().add(
+      Duration(
+        milliseconds: millis - config.advanceNotification,
+      ),
+    );
+
+//    var vibrationPattern = Int64List(4);
+//    vibrationPattern[0] = 0;
+//    vibrationPattern[1] = 1000;
+//    vibrationPattern[2] = 5000;
+//    vibrationPattern[3] = 2000;
+
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'pomodoro timer channel id',
+        'pomodoro timer channel name',
+        'pomodoro timer channel description',
+//        icon: 'secondary_icon',
+//        sound: 'slow_spring_board',
+//        largeIcon: 'sample_large_icon',
+//        largeIconBitmapSource: BitmapSource.Drawable,
+//        vibrationPattern: vibrationPattern,
+        importance: Importance.Max,
+        priority: Priority.High,
+        enableLights: true,
+//        color: const Color.fromARGB(255, 255, 0, 0),
+        ledColor: const Color.fromARGB(255, 255, 0, 0),
+        ledOnMs: 1000,
+        ledOffMs: 500);
+
+    var iOSPlatformChannelSpecifics =
+        IOSNotificationDetails(sound: "slow_spring_board.aiff");
+
+    await flutterLocalNotificationsPlugin.schedule(
+      0,
+      'Pomodoro Timer',
+      "Time's Up!",
+      scheduledNotificationDateTime,
+      NotificationDetails(
+        androidPlatformChannelSpecifics,
+        iOSPlatformChannelSpecifics,
+      ),
+    );
+  }
+
+  ///
+  ///
+  ///
+  Future<void> _cancelAllNotifications() async {
+    await flutterLocalNotificationsPlugin.cancelAll();
   }
 
   ///
@@ -397,7 +520,7 @@ class Timer extends StatelessWidget {
       _text = 'Waiting';
       _value = 0;
     } else {
-      _text = Time.format(data);
+      _text = Tempo.format(data);
       _value = (data - 1000) / time;
     }
 

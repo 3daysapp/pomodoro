@@ -1,7 +1,7 @@
 ///
 ///
 ///
-class Time {
+class Tempo {
   final int hours;
   final int minutes;
   final int seconds;
@@ -9,7 +9,7 @@ class Time {
   ///
   ///
   ///
-  Time({
+  Tempo({
     this.hours = 0,
     this.minutes = 0,
     this.seconds = 0,
@@ -26,6 +26,13 @@ class Time {
   ///
   ///
   ///
+  int toInt() {
+    return Tempo.toMillis(this);
+  }
+
+  ///
+  ///
+  ///
   static String format(int millis) {
     String s = "";
 
@@ -34,15 +41,15 @@ class Time {
       millis = millis.abs() + 1000;
     }
 
-    Time time = toTime(millis);
+    Tempo tempo = toTime(millis);
 
-    return s + _rawFormat(time);
+    return s + _rawFormat(tempo);
   }
 
   ///
   ///
   ///
-  static _rawFormat(Time time) {
+  static _rawFormat(Tempo time) {
     String s = "${time.minutes.toString().padLeft(2, '0')}:"
         "${time.seconds.toString().padLeft(2, '0')}";
 
@@ -56,15 +63,15 @@ class Time {
   ///
   ///
   ///
-  static Time toTime(int millis) {
-    return Time(
+  static Tempo toTime(int millis) {
+    return Tempo(
       hours: millis ~/ 3600000 % 60,
       minutes: millis ~/ 60000 % 60,
       seconds: millis ~/ 1000 % 60,
     );
   }
 
-  static int toMillis(Time time) {
+  static int toMillis(Tempo time) {
     return time.hours * 3600000 + time.minutes * 60000 + time.seconds * 1000;
   }
 }
