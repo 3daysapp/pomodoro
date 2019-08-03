@@ -15,5 +15,7 @@ void main() {
 
   enableFlutterDriverExtension(handler: dataHandler);
 
+  WidgetsApp.debugAllowBannerOverride = false;
+
   runApp(PomodoroTimer(disableNotifications: true));
 }

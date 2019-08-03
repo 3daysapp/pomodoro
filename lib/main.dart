@@ -539,7 +539,7 @@ class _HomeState extends State<Home> {
               ? Icon(
                   Icons.check_circle,
                   key: Key("taskOk${i}Icon"),
-                  color: Colors.deepOrange,
+                  color: Theme.of(context).accentColor,
                 )
               : Icon(
                   Icons.brightness_1,
