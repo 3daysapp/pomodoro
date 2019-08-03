@@ -12,7 +12,7 @@ staging: /tmp/screenshots
 #   See open issue: https://github.com/flutter/flutter/issues/27785 for details.
 locales:
   #  - fr-CA
-  - pt-BR
+  - en-US
 
 # A list of devices to run tests on
 devices:
@@ -22,6 +22,7 @@ devices:
 #      frame: false
   android:
     Nexus 6P:
+    Nexus 9:
 
 # Frame screenshots
 frame: false

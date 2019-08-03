@@ -202,19 +202,26 @@ class _HomeState extends State<Home> {
                       padding: const EdgeInsets.all(12.0),
                       child: _getChipByStatus(config.status),
                     ),
-                    Expanded(
+                    Flexible(
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 20, right: 20),
-                        child: FittedBox(
-                          child: StreamBuilder(
-                            stream: _stream,
-                            builder: (BuildContext context,
-                                AsyncSnapshot<int> snapshot) {
-                              if (snapshot.hasData) {
-                                return Timer(data: snapshot.data, time: _time);
-                              }
-                              return Timer(data: 0, time: 0);
-                            },
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: SizedBox(
+                          height: double.infinity,
+                          width: double.infinity,
+                          child: FittedBox(
+                            child: StreamBuilder(
+                              stream: _stream,
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<int> snapshot) {
+                                if (snapshot.hasData) {
+                                  return Timer(
+                                    data: snapshot.data,
+                                    time: _time,
+                                  );
+                                }
+                                return Timer(data: 0, time: 0);
+                              },
+                            ),
                           ),
                         ),
                       ),
