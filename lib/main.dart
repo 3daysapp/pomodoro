@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pomodoro/config.dart';
@@ -5,6 +7,9 @@ import 'package:pomodoro/settings.dart';
 import 'package:pomodoro/tempo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter_udid/flutter_udid.dart';
+import 'package:package_info/package_info.dart';
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -13,7 +18,22 @@ FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 ///
 void main() {
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  runApp(PomodoroTimer());
+
+  bool debug = false;
+
+  assert(debug = true);
+
+  if (debug) {
+    runApp(PomodoroTimer());
+  } else {
+    Crashlytics.instance.enableInDevMode = false;
+    FlutterError.onError = Crashlytics.instance.recordFlutterError;
+
+    runZoned<Future<void>>(
+      () async => runApp(PomodoroTimer()),
+      onError: Crashlytics.instance.recordError,
+    );
+  }
 }
 
 ///
@@ -30,15 +50,25 @@ class PomodoroTimer extends StatelessWidget {
   ///
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Pomodoro Timer',
-      theme: ThemeData(
-        primarySwatch: Colors.red,
-      ),
-      home: Home(
-        disableNotifications: disableNotifications,
-      ),
-      routes: getRoutes(context),
+    return StreamBuilder<String>(
+      stream: FlutterUdid.consistentUdid.asStream(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData || snapshot.hasError) {
+          if (snapshot.hasData) {
+            Crashlytics.instance.setUserIdentifier(snapshot.data);
+          }
+
+          return MaterialApp(
+            title: 'Pomodoro Timer',
+            theme: ThemeData(
+              primarySwatch: Colors.red,
+            ),
+            home: Home(disableNotifications: disableNotifications),
+            routes: getRoutes(context),
+          );
+        }
+        return CircularProgressIndicator();
+      },
     );
   }
 
@@ -185,7 +215,23 @@ class _HomeState extends State<Home> {
               leading: Icon(Icons.settings),
               title: Text('Settings'),
               onTap: () => Navigator.of(context).popAndPushNamed('/settings'),
-            )
+            ),
+            Divider(),
+            StreamBuilder<PackageInfo>(
+              stream: PackageInfo.fromPlatform().asStream(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return ListTile(
+                    leading: Icon(Icons.verified_user),
+                    title: Text('Version'),
+                    subtitle: Text(snapshot.data.version),
+                  );
+                }
+                return ListTile(
+                  title: Text('Loading...'),
+                );
+              },
+            ),
           ],
         ),
       ),
