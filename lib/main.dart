@@ -20,6 +20,11 @@ void main() {
 ///
 ///
 class PomodoroTimer extends StatelessWidget {
+  final bool disableNotifications;
+
+  const PomodoroTimer({Key key, this.disableNotifications = false})
+      : super(key: key);
+
   ///
   ///
   ///
@@ -30,7 +35,9 @@ class PomodoroTimer extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.red,
       ),
-      home: Home(),
+      home: Home(
+        disableNotifications: disableNotifications,
+      ),
       routes: getRoutes(context),
     );
   }
@@ -50,7 +57,9 @@ class PomodoroTimer extends StatelessWidget {
 ///
 ///
 class Home extends StatefulWidget {
-  Home({Key key}) : super(key: key);
+  final bool disableNotifications;
+
+  const Home({Key key, this.disableNotifications}) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
@@ -60,8 +69,6 @@ class Home extends StatefulWidget {
 ///
 ///
 class _HomeState extends State<Home> {
-//  var platform = MethodChannel('crossingthestreams.io/resourceResolver');
-
   Config config = Config();
 
   int _time = 0;
@@ -74,19 +81,19 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+    if (!widget.disableNotifications) {
+      var initializationSettingsAndroid =
+          AndroidInitializationSettings('pomodoro_icon');
 
-    var initializationSettingsAndroid =
-        AndroidInitializationSettings('pomodoro_icon');
+      var initializationSettingsIOS = IOSInitializationSettings(
+          onDidReceiveLocalNotification: onDidReceiveLocalNotification);
 
-    var initializationSettingsIOS = IOSInitializationSettings(
-        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+      var initializationSettings = InitializationSettings(
+          initializationSettingsAndroid, initializationSettingsIOS);
 
-    var initializationSettings = InitializationSettings(
-        initializationSettingsAndroid, initializationSettingsIOS);
-
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
-
+      flutterLocalNotificationsPlugin.initialize(initializationSettings,
+          onSelectNotification: onSelectNotification);
+    }
     _fabIcon = Icon(Icons.play_arrow);
     _stream = Stream<int>.periodic(Duration(milliseconds: 500), _decreaseTime);
   }
@@ -154,25 +161,30 @@ class _HomeState extends State<Home> {
           children: <Widget>[
             UserAccountsDrawerHeader(
               accountName: Text('Pomodoro Timer'),
-              accountEmail: null,
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.black45,
-                child: Text(
-                  'PO',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 38.0,
-                  ),
-                ),
-              ),
+              accountEmail: Text('3daysapp.com.br'),
+//              currentAccountPicture: CircleAvatar(
+//                backgroundColor: Colors.black45,
+//                child: Text(
+//                  'PO',
+//                  style: TextStyle(
+//                    color: Colors.white,
+//                    fontSize: 38.0,
+//                  ),
+//                ),
+//              ),
             ),
             ListTile(
+              key: Key('resetTile'),
+              leading: Icon(Icons.restore),
+              title: Text('Reset'),
+              onTap: _reset,
+            ),
+            Divider(),
+            ListTile(
+              key: Key('settingsTile'),
               leading: Icon(Icons.settings),
               title: Text('Settings'),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pushNamed('/settings');
-              },
+              onTap: () => Navigator.of(context).popAndPushNamed('/settings'),
             )
           ],
         ),
@@ -231,6 +243,27 @@ class _HomeState extends State<Home> {
   ///
   ///
   ///
+  Future<void> _reset() async {
+    config.lastStatus = null;
+    config.status = Status.stopped;
+    config.taskCount = 0;
+    config.circle = 0;
+    config.startTime = null;
+
+    _checkTime();
+
+    _cancelAllNotifications();
+
+    await saveToSharedPreferences();
+
+    setState(() {});
+
+    Navigator.of(context).pop();
+  }
+
+  ///
+  ///
+  ///
   Future<bool> loadFromSharedPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -244,20 +277,20 @@ class _HomeState extends State<Home> {
     config.status = Status.values.elementAt(prefs.getInt('status') ?? 0);
 
     int lastStatus = prefs.getInt('last_status') ?? null;
-    if (lastStatus == null) {
+    if (lastStatus == null || lastStatus < 0) {
       config.lastStatus = null;
     } else {
       config.lastStatus = Status.values.elementAt(lastStatus);
     }
 
     int startTime = prefs.get('start_time') ?? null;
-    if (startTime == null) {
+    if (startTime == null || startTime < 0) {
       config.startTime = null;
     } else {
       config.startTime = DateTime.fromMillisecondsSinceEpoch(startTime);
     }
 
-    checkTime();
+    _checkTime();
 
     return true;
   }
@@ -283,7 +316,11 @@ class _HomeState extends State<Home> {
     }
     await prefs.setInt('last_status', lastStatus);
 
-    await prefs.setInt('start_time', config.startTime.millisecondsSinceEpoch);
+    int startTime = -1;
+    if (config.startTime != null) {
+      startTime = config.startTime.millisecondsSinceEpoch;
+    }
+    await prefs.setInt('start_time', startTime);
   }
 
   ///
@@ -335,7 +372,7 @@ class _HomeState extends State<Home> {
         break;
     }
 
-    checkTime();
+    _checkTime();
 
     await saveToSharedPreferences();
 
@@ -345,7 +382,7 @@ class _HomeState extends State<Home> {
   ///
   ///
   ///
-  void checkTime() {
+  void _checkTime() {
     switch (config.status) {
       case Status.task:
         _time = config.taskTime;
@@ -365,6 +402,10 @@ class _HomeState extends State<Home> {
   ///
   ///
   Future<void> _scheduleNotification(int millis) async {
+    if (widget.disableNotifications) {
+      return;
+    }
+
     var scheduledNotificationDateTime = DateTime.now().add(
       Duration(
         milliseconds: millis - config.advanceNotification,
@@ -413,6 +454,10 @@ class _HomeState extends State<Home> {
   ///
   ///
   Future<void> _cancelAllNotifications() async {
+    if (widget.disableNotifications) {
+      return;
+    }
+
     await flutterLocalNotificationsPlugin.cancelAll();
   }
 

@@ -2,19 +2,35 @@ import 'package:flutter_driver/flutter_driver.dart';
 import 'package:screenshots/screenshots.dart';
 import 'package:test/test.dart';
 
+///
+///
+///
 void main() {
+  ///
+  ///
+  ///
   group('end-to-end test', () {
     FlutterDriver driver;
     final config = Config().configInfo;
+    int _count = 0;
 
+    ///
+    ///
+    ///
     setUpAll(() async {
       driver = await FlutterDriver.connect();
     });
 
+    ///
+    ///
+    ///
     tearDownAll(() async {
       if (driver != null) await driver.close();
     });
 
+    ///
+    ///
+    ///
     test('main test', () async {
       Health health = await driver.checkHealth();
 
@@ -32,7 +48,7 @@ void main() {
 
       await driver.waitFor(fab);
 
-      await screenshot(driver, config, 'Waiting');
+      await screenshot(driver, config, (_count++).toString());
 
       /// Starting the circle.
 
@@ -53,7 +69,7 @@ void main() {
         print('Working');
         await driver.waitFor(workingChip);
         if (t == 1) {
-          await screenshot(driver, config, 'Working');
+          await screenshot(driver, config, (_count++).toString());
         }
         await Future.delayed(Duration(seconds: 5));
         await driver.tap(fab);
@@ -74,7 +90,7 @@ void main() {
           print('Short Pause');
           await driver.waitFor(shortPauseChip);
           if (t == 1) {
-            await screenshot(driver, config, 'Short Pause');
+            await screenshot(driver, config, (_count++).toString());
           }
           await Future.delayed(Duration(seconds: 5));
           await driver.tap(fab);
@@ -82,7 +98,7 @@ void main() {
           /// Long Pause
           print('Long Pause');
           await driver.waitFor(longPauseChip);
-          await screenshot(driver, config, 'Long Pause');
+          await screenshot(driver, config, (_count++).toString());
           await Future.delayed(Duration(seconds: 5));
           await driver.tap(fab);
         }
@@ -101,6 +117,37 @@ void main() {
       }
 
       await driver.waitFor(stoppedChip);
+
+      // FIXME: Better way to find the Drawer.
+      SerializableFinder homeDrawer = find.byTooltip('Open navigation menu');
+
+      await driver.waitFor(homeDrawer);
+
+      await driver.tap(homeDrawer);
+
+      SerializableFinder settingsTile = find.byValueKey('settingsTile');
+
+      await driver.waitFor(settingsTile);
+
+      await driver.tap(settingsTile);
+
+      await driver.waitFor(find.text('Task Time'));
+
+      await screenshot(driver, config, (_count++).toString());
+
+      await driver.tap(find.pageBack());
+
+      await driver.waitFor(homeDrawer);
+
+      await driver.tap(homeDrawer);
+
+      SerializableFinder resetTile = find.byValueKey('resetTile');
+
+      await driver.waitFor(resetTile);
+
+      await screenshot(driver, config, (_count++).toString());
+
+      await driver.tap(resetTile);
 
       print('The End');
 
