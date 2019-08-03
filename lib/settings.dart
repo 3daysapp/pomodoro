@@ -96,6 +96,14 @@ class _SettingsState extends State<Settings> {
               },
             ),
           ),
+          FieldLabel('Advance Notification'),
+          TimerWidget(
+            config.advanceNotification,
+            callback: (time) async {
+              setState(() => config.advanceNotification = time);
+              await saveConfig();
+            },
+          ),
         ],
       ),
     );
