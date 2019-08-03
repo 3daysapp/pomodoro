@@ -38,6 +38,7 @@
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
+**/android/app/google-services.json
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -79,7 +80,10 @@
 # scan temporary files
 **/fastlane/test_output
 
-test_driver/secrets.dart
+**/android/**/images/phoneScreenshots/*
+**/android/**/images/tenInchScreenshots/*
+
+secrets.dart
 
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3
@@ -87,4 +91,3 @@ test_driver/secrets.dart
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
-**/android/key.properties
