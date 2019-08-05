@@ -23,12 +23,8 @@ class Config {
   Status lastStatus;
   DateTime startTime;
   int advanceNotification;
+  bool wakeLock = false;
+  bool change = false;
 
   Config._internal();
 }
-
-// TODO: Implement Progress Notification.
-// TODO: Implement Vibration.
-// TODO: Reset App.
-// TODO: App version in drawer.
-// FIXME: Verify FAB icon on app load.

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_picker/flutter_picker.dart';
-import 'package:pomodoro/config.dart';
-import 'package:pomodoro/tempo.dart';
+import 'package:pomodoro/util/FieldLabel.dart';
+import 'package:pomodoro/util/TimerWidget.dart';
+import 'package:pomodoro/util/Config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wakelock/wakelock.dart';
 
 ///
 ///
@@ -20,6 +21,9 @@ class _SettingsState extends State<Settings> {
   FocusNode _taskQtdFocusNode = FocusNode();
   TextEditingController _taskQtdController;
 
+  ///
+  ///
+  ///
   @override
   void initState() {
     super.initState();
@@ -104,6 +108,31 @@ class _SettingsState extends State<Settings> {
               await saveConfig();
             },
           ),
+          FieldLabel('More Options'),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4.0),
+                border: Border.all(color: Colors.black45),
+              ),
+              child: Column(
+                children: <Widget>[
+                  SwitchListTile.adaptive(
+                    title: Text(
+                      'Not sleep',
+                      style: TextStyle(color: Colors.black45),
+                    ),
+                    value: config.wakeLock,
+                    onChanged: (value) async {
+                      setState(() => config.wakeLock = value);
+                      await saveConfig();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -119,153 +148,11 @@ class _SettingsState extends State<Settings> {
     await prefs.setInt('short_pause', config.shortPause);
     await prefs.setInt('long_pause', config.longPause);
     await prefs.setInt('task_qtd', config.taskQtd);
-  }
-}
+    await prefs.setInt('advance_notification', config.advanceNotification);
+    await prefs.setBool('wake_lock', config.wakeLock);
 
-///
-///
-///
-class TimerWidget extends StatelessWidget {
-  final int millis;
-  final ValueSetter<int> callback;
+    config.change = true;
 
-  ///
-  ///
-  ///
-  TimerWidget(this.millis, {this.callback, Key key}) : super(key: key);
-
-  ///
-  ///
-  ///
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4.0),
-          border: Border.all(color: Colors.black45),
-        ),
-        child: FlatButton(
-          onPressed: () => showPickerNumber(context),
-          child: Text(
-            Tempo.format(millis),
-          ),
-          padding: EdgeInsets.zero,
-        ),
-      ),
-    );
-  }
-
-  ///
-  ///
-  ///
-  showPickerNumber(BuildContext context) {
-    Tempo time = Tempo.toTime(millis);
-
-    Picker(
-      adapter: NumberPickerAdapter(data: [
-        NumberPickerColumn(
-          initValue: time.hours,
-          begin: 0,
-          end: 99,
-          onFormatValue: (value) => value.toString().padLeft(2, '0'),
-        ),
-        NumberPickerColumn(
-          initValue: time.minutes,
-          begin: 0,
-          end: 59,
-          onFormatValue: (value) => value.toString().padLeft(2, '0'),
-        ),
-        NumberPickerColumn(
-          initValue: time.seconds,
-          begin: 0,
-          end: 59,
-          onFormatValue: (value) => value.toString().padLeft(2, '0'),
-        ),
-      ]),
-      delimiter: [
-        PickerDelimiter(
-          column: 1,
-          child: Container(
-            width: 30.0,
-            alignment: Alignment.center,
-            child: Text(
-              ':',
-              textScaleFactor: 2,
-              style: TextStyle(
-                color: Colors.black45,
-              ),
-            ),
-          ),
-        ),
-        PickerDelimiter(
-          column: 3,
-          child: Container(
-            width: 30.0,
-            alignment: Alignment.center,
-            child: Text(
-              ':',
-              textScaleFactor: 2,
-              style: TextStyle(
-                color: Colors.black45,
-              ),
-            ),
-          ),
-        ),
-      ],
-      hideHeader: true,
-      title: Text(
-        "Task Time",
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Colors.black45,
-        ),
-      ),
-      selectedTextStyle: TextStyle(color: Theme.of(context).accentColor),
-      onConfirm: (Picker picker, List value) {
-        List<int> parts = picker.getSelectedValues();
-        Tempo time = Tempo(
-          hours: parts[0],
-          minutes: parts[1],
-          seconds: parts[2],
-        );
-
-        if (callback != null) {
-          callback(time.toInt());
-        }
-      },
-    ).showDialog(context);
-  }
-}
-
-///
-///
-///
-class FieldLabel extends StatelessWidget {
-  final String label;
-
-  ///
-  ///
-  ///
-  const FieldLabel(this.label, {Key key}) : super(key: key);
-
-  ///
-  ///
-  ///
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        top: 8.0,
-        left: 16.0,
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: Colors.black45,
-        ),
-      ),
-    );
+    Wakelock.toggle(on: config.wakeLock);
   }
 }

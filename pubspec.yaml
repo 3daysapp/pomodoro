@@ -17,6 +17,7 @@ dependencies:
     git: git://github.com/yangyxd/flutter_picker.git
   firebase_crashlytics: ^0.1.0+2
   flutter_udid: ^1.0.0
+  wakelock: ^0.1.2+7
 
 dev_dependencies:
   flutter_test:
