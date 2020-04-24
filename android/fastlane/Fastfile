@@ -1,51 +1,16 @@
-# This file contains the fastlane.tools configuration
-# You can find the documentation at https://docs.fastlane.tools
-#
-# For a list of all available actions, check out
-#
-#     https://docs.fastlane.tools/actions
-#
-# For a list of all available plugins, check out
-#
-#     https://docs.fastlane.tools/plugins/available-plugins
-#
-
-# Uncomment the line if you want fastlane to automatically update itself
-# update_fastlane
-
 default_platform(:android)
 
 platform :android do
 
-  # Constant to version.
-  constant = 15
-
   desc "Run Tests"
   lane :test do
-    build_number = number_of_commits() - constant
-
-    build_name = "#{build_number / 10000}.#{(build_number / 100) % 100}.#{build_number % 100}"
-
     Dir.chdir("../../") do
       sh("flutter", "pub", "get")
       sh("flutter", "pub", "run", "flutter_launcher_icons:main")
-      sh("screenshots")
+#      sh("screenshots")
       sh("flutter", "clean")
-      sh('flutter', 'build', 'appbundle', '--target-platform', 'android-arm,android-arm64', "--build-number=#{build_number}", "--build-name=#{build_name}")
+      sh('flutter', 'build', 'appbundle')
     end
-  end
-
-  desc "Development"
-  lane :dev do
-    ensure_git_branch(branch: 'master')
-
-    build_number = number_of_commits() - constant
-
-    build_name = "#{build_number / 10000}.#{(build_number / 100) % 100}.#{build_number % 100}"
-
-    puts build_number
-
-    puts build_name
   end
 
   desc "Submit a new build to Internal Track on Play"
@@ -54,16 +19,12 @@ platform :android do
 
     ensure_git_status_clean
 
-    build_number = number_of_commits() - constant
-
-    build_name = "#{build_number / 10000}.#{(build_number / 100) % 100}.#{build_number % 100}"
-
     Dir.chdir("../../") do
       sh("flutter", "pub", "get")
       sh("flutter", "pub", "run", "flutter_launcher_icons:main")
-      sh("screenshots")
+#      sh("screenshots")
       sh("flutter", "clean")
-      sh('flutter', 'build', 'appbundle', '--target-platform', 'android-arm,android-arm64', "--build-number=#{build_number}", "--build-name=#{build_name}")
+      sh('flutter', 'build', 'appbundle')
     end
 
     upload_to_play_store(
@@ -73,24 +34,10 @@ platform :android do
       skip_upload_metadata: false,
       skip_upload_images: false,
       skip_upload_screenshots: false,
-      aab: '../build/app/outputs/bundle/release/app.aab',
+      aab: '../build/app/outputs/bundle/release/app-release.aab',
       deactivate_on_promote: false,
       rollout: '1.0'
     )
   end
 
-  desc 'Promote latest release build from internal to beta on Play Store'
-  lane :internal_to_beta do
-    upload_to_play_store(
-      track: 'internal',
-      track_promote_to: 'beta',
-      skip_upload_aab: true,
-      skip_upload_apk: true,
-      skip_upload_metadata: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true,
-      deactivate_on_promote: false,
-      rollout: '1.0'
-    )
-  end
 end

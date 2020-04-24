@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
 import 'package:flutter/material.dart';
 import 'package:pomodoro/view/Home.dart';
 import 'package:pomodoro/view/Settings.dart';
@@ -34,6 +35,8 @@ void main() {
 class PomodoroTimer extends StatelessWidget {
   final bool disableNotifications;
 
+  static FirebaseAnalytics analytics = FirebaseAnalytics();
+
   const PomodoroTimer({Key key, this.disableNotifications = false})
       : super(key: key);
 
@@ -57,6 +60,9 @@ class PomodoroTimer extends StatelessWidget {
             ),
             home: Home(disableNotifications: disableNotifications),
             routes: getRoutes(context),
+            navigatorObservers: [
+              FirebaseAnalyticsObserver(analytics: analytics),
+            ],
           );
         }
         return CircularProgressIndicator();

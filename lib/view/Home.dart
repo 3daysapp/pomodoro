@@ -26,12 +26,12 @@ class _HomeState extends State<Home> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  Config config = Config();
+  final Config _config = Config();
 
   int _time = 0;
   Icon _fabIcon;
   Stream<int> _stream;
-  String _version = "0.0.0";
+  String _version = '0.0.0';
 
   ///
   ///
@@ -104,11 +104,12 @@ class _HomeState extends State<Home> {
             padding: const EdgeInsets.only(right: 12),
             child: Chip(
               label: Text(
-                (config.circle ?? 0).toString(),
+                (_config.circle ?? 0).toString(),
                 key: Key('circleText'),
                 style: TextStyle(
-                    color: Theme.of(context).accentColor,
-                    fontWeight: FontWeight.bold),
+                  color: Theme.of(context).accentColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               backgroundColor: Colors.white24,
             ),
@@ -158,7 +159,7 @@ class _HomeState extends State<Home> {
       body: StreamBuilder(
           stream: _loadFromSharedPreferences().asStream(),
           builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-            if (config.change) {
+            if (_config.change) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -166,13 +167,13 @@ class _HomeState extends State<Home> {
                   Center(
                       child: Text(
                     'Config has changed.',
-                    style: Theme.of(context).textTheme.title,
+                    style: Theme.of(context).textTheme.headline6,
                   )),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12.0),
                     child: Text(
                       'Do you want to reset the timer?',
-                      style: Theme.of(context).textTheme.subtitle,
+                      style: Theme.of(context).textTheme.subtitle2,
                     ),
                   ),
                   RaisedButton(
@@ -185,7 +186,7 @@ class _HomeState extends State<Home> {
                       _stream = Stream<int>.periodic(
                           Duration(milliseconds: 500), _decreaseTime);
                       setState(() {
-                        config.change = false;
+                        _config.change = false;
                       });
                     },
                     color: Theme.of(context).accentColor,
@@ -194,9 +195,11 @@ class _HomeState extends State<Home> {
                     child: Text('No, thanks.'),
                     onPressed: () {
                       _stream = Stream<int>.periodic(
-                          Duration(milliseconds: 500), _decreaseTime);
+                        Duration(milliseconds: 500),
+                        _decreaseTime,
+                      );
                       setState(() {
-                        config.change = false;
+                        _config.change = false;
                       });
                     },
                   ),
@@ -212,7 +215,7 @@ class _HomeState extends State<Home> {
                   children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.all(12.0),
-                      child: _getChipByStatus(config.status),
+                      child: _getChipByStatus(_config.status),
                     ),
                     Flexible(
                       child: Padding(
@@ -263,15 +266,15 @@ class _HomeState extends State<Home> {
   ///
   ///
   Future<void> _reset({bool pop = true}) async {
-    config.lastStatus = null;
-    config.status = Status.stopped;
-    config.taskCount = 0;
-    config.circle = 0;
-    config.startTime = null;
+    _config.lastStatus = null;
+    _config.status = Status.stopped;
+    _config.taskCount = 0;
+    _config.circle = 0;
+    _config.startTime = null;
 
     _checkTime();
 
-    _cancelAllNotifications();
+    await _cancelAllNotifications();
 
     await _saveToSharedPreferences();
 
@@ -288,31 +291,31 @@ class _HomeState extends State<Home> {
   Future<bool> _loadFromSharedPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    config.taskTime = prefs.getInt('task_time') ?? 1500000;
-    config.shortPause = prefs.getInt('short_pause') ?? 300000;
-    config.longPause = prefs.getInt('long_pause') ?? 1500000;
-    config.taskQtd = prefs.getInt('task_qtd') ?? 4;
-    config.circle = prefs.getInt('circle') ?? 0;
-    config.taskCount = prefs.getInt('task_count') ?? 0;
-    config.advanceNotification = prefs.getInt('advance_notification') ?? 10000;
-    config.wakeLock = prefs.getBool('wake_lock') ?? false;
-    config.status = Status.values.elementAt(prefs.getInt('status') ?? 0);
+    _config.taskTime = prefs.getInt('task_time') ?? 1500000;
+    _config.shortPause = prefs.getInt('short_pause') ?? 300000;
+    _config.longPause = prefs.getInt('long_pause') ?? 1500000;
+    _config.taskQtd = prefs.getInt('task_qtd') ?? 4;
+    _config.circle = prefs.getInt('circle') ?? 0;
+    _config.taskCount = prefs.getInt('task_count') ?? 0;
+    _config.advanceNotification = prefs.getInt('advance_notification') ?? 10000;
+    _config.wakeLock = prefs.getBool('wake_lock') ?? false;
+    _config.status = Status.values.elementAt(prefs.getInt('status') ?? 0);
 
-    int lastStatus = prefs.getInt('last_status') ?? null;
+    int lastStatus = prefs.getInt('last_status');
     if (lastStatus == null || lastStatus < 0) {
-      config.lastStatus = null;
+      _config.lastStatus = null;
     } else {
-      config.lastStatus = Status.values.elementAt(lastStatus);
+      _config.lastStatus = Status.values.elementAt(lastStatus);
     }
 
-    int startTime = prefs.get('start_time') ?? null;
+    int startTime = prefs.get('start_time');
     if (startTime == null || startTime < 0) {
-      config.startTime = null;
+      _config.startTime = null;
     } else {
-      config.startTime = DateTime.fromMillisecondsSinceEpoch(startTime);
+      _config.startTime = DateTime.fromMillisecondsSinceEpoch(startTime);
     }
 
-    Wakelock.toggle(on: config.wakeLock);
+    await Wakelock.toggle(on: _config.wakeLock);
 
     _checkTime();
 
@@ -325,25 +328,25 @@ class _HomeState extends State<Home> {
   Future<void> _saveToSharedPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    await prefs.setInt('task_time', config.taskTime);
-    await prefs.setInt('short_pause', config.shortPause);
-    await prefs.setInt('long_pause', config.longPause);
-    await prefs.setInt('task_qtd', config.taskQtd);
-    await prefs.setInt('circle', config.circle);
-    await prefs.setInt('task_count', config.taskCount);
-    await prefs.setInt('advance_notification', config.advanceNotification);
-    await prefs.setBool('wake_lock', config.wakeLock);
-    await prefs.setInt('status', config.status.index);
+    await prefs.setInt('task_time', _config.taskTime);
+    await prefs.setInt('short_pause', _config.shortPause);
+    await prefs.setInt('long_pause', _config.longPause);
+    await prefs.setInt('task_qtd', _config.taskQtd);
+    await prefs.setInt('circle', _config.circle);
+    await prefs.setInt('task_count', _config.taskCount);
+    await prefs.setInt('advance_notification', _config.advanceNotification);
+    await prefs.setBool('wake_lock', _config.wakeLock);
+    await prefs.setInt('status', _config.status.index);
 
     int lastStatus = -1;
-    if (config.lastStatus != null) {
-      lastStatus = config.lastStatus.index;
+    if (_config.lastStatus != null) {
+      lastStatus = _config.lastStatus.index;
     }
     await prefs.setInt('last_status', lastStatus);
 
     int startTime = -1;
-    if (config.startTime != null) {
-      startTime = config.startTime.millisecondsSinceEpoch;
+    if (_config.startTime != null) {
+      startTime = _config.startTime.millisecondsSinceEpoch;
     }
     await prefs.setInt('start_time', startTime);
   }
@@ -354,47 +357,47 @@ class _HomeState extends State<Home> {
   void _fabPress() async {
     await _loadFromSharedPreferences();
 
-    config.change = false;
+    _config.change = false;
 
-    switch (config.status) {
+    switch (_config.status) {
       case Status.stopped:
-        if (config.lastStatus == null ||
-            config.lastStatus == Status.long ||
-            config.lastStatus == Status.short) {
-          config.status = Status.task;
-          await _scheduleNotification(config.taskTime);
+        if (_config.lastStatus == null ||
+            _config.lastStatus == Status.long ||
+            _config.lastStatus == Status.short) {
+          _config.status = Status.task;
+          await _scheduleNotification(_config.taskTime);
         } else {
-          if (config.taskCount < config.taskQtd) {
-            config.status = Status.short;
-            await _scheduleNotification(config.shortPause);
+          if (_config.taskCount < _config.taskQtd) {
+            _config.status = Status.short;
+            await _scheduleNotification(_config.shortPause);
           } else {
-            config.status = Status.long;
-            await _scheduleNotification(config.longPause);
+            _config.status = Status.long;
+            await _scheduleNotification(_config.longPause);
           }
         }
-        config.lastStatus = Status.stopped;
+        _config.lastStatus = Status.stopped;
         _fabIcon = Icon(Icons.check);
-        config.startTime = DateTime.now();
+        _config.startTime = DateTime.now();
         break;
       case Status.task:
-        config.lastStatus = Status.task;
+        _config.lastStatus = Status.task;
         _fabIcon = Icon(Icons.play_arrow);
-        config.status = Status.stopped;
-        config.taskCount++;
+        _config.status = Status.stopped;
+        _config.taskCount++;
         await _cancelAllNotifications();
         break;
       case Status.short:
-        config.lastStatus = Status.short;
+        _config.lastStatus = Status.short;
         _fabIcon = Icon(Icons.play_arrow);
-        config.status = Status.stopped;
+        _config.status = Status.stopped;
         await _cancelAllNotifications();
         break;
       case Status.long:
-        config.lastStatus = Status.long;
+        _config.lastStatus = Status.long;
         _fabIcon = Icon(Icons.play_arrow);
-        config.status = Status.stopped;
-        config.taskCount = 0;
-        config.circle++;
+        _config.status = Status.stopped;
+        _config.taskCount = 0;
+        _config.circle++;
         await _cancelAllNotifications();
         break;
     }
@@ -410,15 +413,15 @@ class _HomeState extends State<Home> {
   ///
   ///
   void _checkTime() {
-    switch (config.status) {
+    switch (_config.status) {
       case Status.task:
-        _time = config.taskTime;
+        _time = _config.taskTime;
         break;
       case Status.short:
-        _time = config.shortPause;
+        _time = _config.shortPause;
         break;
       case Status.long:
-        _time = config.longPause;
+        _time = _config.longPause;
         break;
       default:
         break;
@@ -435,7 +438,7 @@ class _HomeState extends State<Home> {
 
     var scheduledNotificationDateTime = DateTime.now().add(
       Duration(
-        milliseconds: millis - config.advanceNotification,
+        milliseconds: millis - _config.advanceNotification,
       ),
     );
 
@@ -463,7 +466,7 @@ class _HomeState extends State<Home> {
         ledOffMs: 500);
 
     var iOSPlatformChannelSpecifics =
-        IOSNotificationDetails(sound: "slow_spring_board.aiff");
+        IOSNotificationDetails(sound: 'slow_spring_board.aiff');
 
     await flutterLocalNotificationsPlugin.schedule(
       0,
@@ -492,10 +495,10 @@ class _HomeState extends State<Home> {
   ///
   ///
   int _decreaseTime(int value) {
-    if (config.status == Status.stopped) {
+    if (_config.status == Status.stopped) {
       return null;
     }
-    Duration duration = DateTime.now().difference(config.startTime);
+    Duration duration = DateTime.now().difference(_config.startTime);
     return _time - duration.inMilliseconds;
   }
 
@@ -554,16 +557,16 @@ class _HomeState extends State<Home> {
   Widget _getTaskCount() {
     return Wrap(
       alignment: WrapAlignment.center,
-      children: List.generate(config.taskQtd, (i) => i)
-          .map((i) => i < config.taskCount
+      children: List.generate(_config.taskQtd, (i) => i)
+          .map((i) => i < _config.taskCount
               ? Icon(
                   Icons.check_circle,
-                  key: Key("taskOk${i}Icon"),
+                  key: Key('taskOk${i}Icon'),
                   color: Theme.of(context).accentColor,
                 )
               : Icon(
                   Icons.brightness_1,
-                  key: Key("taskEmpty${i}Icon"),
+                  key: Key('taskEmpty${i}Icon'),
                   color: Colors.black26,
                 ))
           .toList(),

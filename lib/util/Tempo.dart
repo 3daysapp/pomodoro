@@ -34,10 +34,10 @@ class Tempo {
   ///
   ///
   static String format(int millis) {
-    String s = "";
+    String s = '';
 
     if (millis < 0) {
-      s = "-";
+      s = '-';
       millis = millis.abs() + 1000;
     }
 
@@ -49,12 +49,12 @@ class Tempo {
   ///
   ///
   ///
-  static _rawFormat(Tempo time) {
-    String s = "${time.minutes.toString().padLeft(2, '0')}:"
-        "${time.seconds.toString().padLeft(2, '0')}";
+  static String _rawFormat(Tempo time) {
+    String s = '${time.minutes.toString().padLeft(2, '0')}:'
+        '${time.seconds.toString().padLeft(2, '0')}';
 
     if (time.hours > 0) {
-      s = "${time.hours.toString()}:$s";
+      s = '${time.hours.toString()}:$s';
     }
 
     return s;

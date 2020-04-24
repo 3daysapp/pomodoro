@@ -17,8 +17,8 @@ class Settings extends StatefulWidget {
 ///
 ///
 class _SettingsState extends State<Settings> {
-  Config config = Config();
-  FocusNode _taskQtdFocusNode = FocusNode();
+  final Config _config = Config();
+  final FocusNode _taskQtdFocusNode = FocusNode();
   TextEditingController _taskQtdController;
 
   ///
@@ -27,14 +27,20 @@ class _SettingsState extends State<Settings> {
   @override
   void initState() {
     super.initState();
-    _taskQtdController = TextEditingController(text: config.taskQtd.toString());
+    _taskQtdController = TextEditingController(
+      text: _config.taskQtd.toString(),
+    );
 
-    _taskQtdFocusNode.addListener(() {
-      if (_taskQtdFocusNode.hasFocus) {
-        _taskQtdController.selection = TextSelection(
-            baseOffset: 0, extentOffset: _taskQtdController.text.length);
-      }
-    });
+    _taskQtdFocusNode.addListener(
+      () {
+        if (_taskQtdFocusNode.hasFocus) {
+          _taskQtdController.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: _taskQtdController.text.length,
+          );
+        }
+      },
+    );
   }
 
   ///
@@ -51,25 +57,25 @@ class _SettingsState extends State<Settings> {
         children: <Widget>[
           FieldLabel('Task Time'),
           TimerWidget(
-            config.taskTime,
+            _config.taskTime,
             callback: (time) async {
-              setState(() => config.taskTime = time);
               await saveConfig();
+              setState(() => _config.taskTime = time);
             },
           ),
           FieldLabel('Short Pause Time'),
           TimerWidget(
-            config.shortPause,
+            _config.shortPause,
             callback: (time) async {
-              setState(() => config.shortPause = time);
+              setState(() => _config.shortPause = time);
               await saveConfig();
             },
           ),
           FieldLabel('Long Pause Time'),
           TimerWidget(
-            config.longPause,
+            _config.longPause,
             callback: (time) async {
-              setState(() => config.longPause = time);
+              setState(() => _config.longPause = time);
               await saveConfig();
             },
           ),
@@ -91,7 +97,7 @@ class _SettingsState extends State<Settings> {
                   if (value < 2) {
                     throw Exception('Task quantity is invalid.');
                   }
-                  setState(() => config.taskQtd = value);
+                  setState(() => _config.taskQtd = value);
                   await saveConfig();
                 } catch (error) {
                   // TODO: Show this message.
@@ -102,9 +108,9 @@ class _SettingsState extends State<Settings> {
           ),
           FieldLabel('Advance Notification'),
           TimerWidget(
-            config.advanceNotification,
+            _config.advanceNotification,
             callback: (time) async {
-              setState(() => config.advanceNotification = time);
+              setState(() => _config.advanceNotification = time);
               await saveConfig();
             },
           ),
@@ -123,9 +129,9 @@ class _SettingsState extends State<Settings> {
                       'Not sleep',
                       style: TextStyle(color: Colors.black45),
                     ),
-                    value: config.wakeLock,
+                    value: _config.wakeLock,
                     onChanged: (value) async {
-                      setState(() => config.wakeLock = value);
+                      setState(() => _config.wakeLock = value);
                       await saveConfig();
                     },
                   ),
@@ -144,15 +150,15 @@ class _SettingsState extends State<Settings> {
   Future<void> saveConfig() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    await prefs.setInt('task_time', config.taskTime);
-    await prefs.setInt('short_pause', config.shortPause);
-    await prefs.setInt('long_pause', config.longPause);
-    await prefs.setInt('task_qtd', config.taskQtd);
-    await prefs.setInt('advance_notification', config.advanceNotification);
-    await prefs.setBool('wake_lock', config.wakeLock);
+    await prefs.setInt('task_time', _config.taskTime);
+    await prefs.setInt('short_pause', _config.shortPause);
+    await prefs.setInt('long_pause', _config.longPause);
+    await prefs.setInt('task_qtd', _config.taskQtd);
+    await prefs.setInt('advance_notification', _config.advanceNotification);
+    await prefs.setBool('wake_lock', _config.wakeLock);
 
-    config.change = true;
+    _config.change = true;
 
-    Wakelock.toggle(on: config.wakeLock);
+    await Wakelock.toggle(on: _config.wakeLock);
   }
 }

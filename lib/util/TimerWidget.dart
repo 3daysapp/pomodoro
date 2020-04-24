@@ -40,7 +40,7 @@ class TimerWidget extends StatelessWidget {
   ///
   ///
   ///
-  showPickerNumber(BuildContext context) {
+  void showPickerNumber(BuildContext context) {
     Tempo time = Tempo.toTime(millis);
 
     Picker(
@@ -96,7 +96,7 @@ class TimerWidget extends StatelessWidget {
       ],
       hideHeader: true,
       title: Text(
-        "Task Time",
+        'Task Time',
         textAlign: TextAlign.center,
         style: TextStyle(
           color: Colors.black45,

@@ -24,6 +24,7 @@
 **/doc/api/
 .dart_tool/
 .flutter-plugins
+.flutter-plugins-dependencies
 .packages
 .pub-cache/
 .pub/
@@ -84,6 +85,8 @@
 **/android/**/images/tenInchScreenshots/*
 
 secrets.dart
+**/ios/Runner.ipa
+**/ios/Runner.app.*
 
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3

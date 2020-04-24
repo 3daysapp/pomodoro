@@ -1,3 +1,3 @@
-# pomodoro
+# Super Pomodoro Timer
 
-Pomodoro Timer.
+Super Pomodoro Timer.
