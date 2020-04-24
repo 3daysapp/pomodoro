@@ -7,7 +7,7 @@ platform :android do
     Dir.chdir("../../") do
       sh("flutter", "pub", "get")
       sh("flutter", "pub", "run", "flutter_launcher_icons:main")
-#      sh("screenshots")
+      sh("screenshots")
       sh("flutter", "clean")
       sh('flutter', 'build', 'appbundle')
     end
