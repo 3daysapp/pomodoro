@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:package_info/package_info.dart';
-import 'package:pomodoro/util/Clock.dart';
+import 'package:pomodoro/util/clock.dart';
 import 'package:pomodoro/util/Config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
@@ -13,8 +13,14 @@ import 'package:wakelock/wakelock.dart';
 class Home extends StatefulWidget {
   final bool disableNotifications;
 
+  ///
+  ///
+  ///
   const Home({Key key, this.disableNotifications}) : super(key: key);
 
+  ///
+  ///
+  ///
   @override
   _HomeState createState() => _HomeState();
 }
@@ -40,18 +46,25 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     if (!widget.disableNotifications) {
-      var initializationSettingsAndroid =
+      AndroidInitializationSettings initializationSettingsAndroid =
           AndroidInitializationSettings('pomodoro_icon');
 
-      var initializationSettingsIOS = IOSInitializationSettings(
-          onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+      IOSInitializationSettings initializationSettingsIOS =
+          IOSInitializationSettings(
+        onDidReceiveLocalNotification: onDidReceiveLocalNotification,
+      );
 
-      var initializationSettings = InitializationSettings(
-          initializationSettingsAndroid, initializationSettingsIOS);
+      InitializationSettings initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIOS,
+      );
 
-      flutterLocalNotificationsPlugin.initialize(initializationSettings,
-          onSelectNotification: onSelectNotification);
+      flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onSelectNotification: onSelectNotification,
+      );
     }
+
     _fabIcon = Icon(Icons.play_arrow);
     _stream = Stream<int>.periodic(Duration(milliseconds: 500), _decreaseTime);
 
@@ -73,8 +86,11 @@ class _HomeState extends State<Home> {
   ///
   ///
   Future<void> onDidReceiveLocalNotification(
-      int id, String title, String body, String payload) async {
-    // display a dialog with the notification details, tap ok to go to another page
+    int id,
+    String title,
+    String body,
+    String payload,
+  ) async {
     await showDialog(
       context: context,
       builder: (BuildContext context) => CupertinoAlertDialog(
@@ -315,7 +331,7 @@ class _HomeState extends State<Home> {
       _config.startTime = DateTime.fromMillisecondsSinceEpoch(startTime);
     }
 
-    await Wakelock.toggle(on: _config.wakeLock);
+    await Wakelock.toggle(enable: _config.wakeLock);
 
     _checkTime();
 
@@ -442,12 +458,6 @@ class _HomeState extends State<Home> {
       ),
     );
 
-//    var vibrationPattern = Int64List(4);
-//    vibrationPattern[0] = 0;
-//    vibrationPattern[1] = 1000;
-//    vibrationPattern[2] = 5000;
-//    vibrationPattern[3] = 2000;
-
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'pomodoro timer channel id',
         'pomodoro timer channel name',
@@ -457,8 +467,8 @@ class _HomeState extends State<Home> {
 //        largeIcon: 'sample_large_icon',
 //        largeIconBitmapSource: BitmapSource.Drawable,
 //        vibrationPattern: vibrationPattern,
-        importance: Importance.Max,
-        priority: Priority.High,
+        importance: Importance.max,
+        priority: Priority.high,
         enableLights: true,
 //        color: const Color.fromARGB(255, 255, 0, 0),
         ledColor: const Color.fromARGB(255, 255, 0, 0),
@@ -474,8 +484,8 @@ class _HomeState extends State<Home> {
       "Time's Up!",
       scheduledNotificationDateTime,
       NotificationDetails(
-        androidPlatformChannelSpecifics,
-        iOSPlatformChannelSpecifics,
+        android: androidPlatformChannelSpecifics,
+        iOS: iOSPlatformChannelSpecifics,
       ),
     );
   }

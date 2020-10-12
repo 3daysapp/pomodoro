@@ -9,6 +9,9 @@ enum Status { stopped, task, short, long }
 class Config {
   static final Config _singleton = Config._internal();
 
+  ///
+  ///
+  ///
   factory Config() {
     return _singleton;
   }
@@ -25,6 +28,7 @@ class Config {
   int advanceNotification;
   bool wakeLock = false;
   bool change = false;
+  bool debug = false;
 
   Config._internal();
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pomodoro/util/FieldLabel.dart';
-import 'package:pomodoro/util/TimerWidget.dart';
+import 'package:pomodoro/util/field_label.dart';
+import 'package:pomodoro/util/timer_widget.dart';
 import 'package:pomodoro/util/Config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
@@ -159,6 +159,6 @@ class _SettingsState extends State<Settings> {
 
     _config.change = true;
 
-    await Wakelock.toggle(on: _config.wakeLock);
+    await Wakelock.toggle(enable: _config.wakeLock);
   }
 }

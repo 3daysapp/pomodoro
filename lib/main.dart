@@ -2,30 +2,36 @@ import 'dart:async';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
-import 'package:flutter/material.dart';
-import 'package:pomodoro/view/Home.dart';
-import 'package:pomodoro/view/Settings.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_udid/flutter_udid.dart';
+import 'package:pomodoro/util/config.dart';
+import 'package:pomodoro/view/home.dart';
+import 'package:pomodoro/view/settings.dart';
 
 ///
 ///
 ///
-void main() {
+void main() async {
   bool debug = false;
-
   assert(debug = true);
+  Config config = Config();
+  config.debug = debug;
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
 
   if (debug) {
     runApp(PomodoroTimer());
   } else {
-    Crashlytics.instance.enableInDevMode = false;
-    FlutterError.onError = Crashlytics.instance.recordFlutterError;
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
 
-    runZoned<Future<void>>(
-      () async => runApp(PomodoroTimer()),
-      onError: Crashlytics.instance.recordError,
-    );
+    runZonedGuarded(() {
+      runApp(PomodoroTimer());
+    }, FirebaseCrashlytics.instance.recordError);
   }
 }
 
@@ -45,12 +51,12 @@ class PomodoroTimer extends StatelessWidget {
   ///
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<String>(
-      stream: FlutterUdid.consistentUdid.asStream(),
+    return FutureBuilder<String>(
+      future: FlutterUdid.consistentUdid,
       builder: (context, snapshot) {
         if (snapshot.hasData || snapshot.hasError) {
           if (snapshot.hasData) {
-            Crashlytics.instance.setUserIdentifier(snapshot.data);
+            FirebaseCrashlytics.instance.setUserIdentifier(snapshot.data);
           }
 
           return MaterialApp(
@@ -59,24 +65,28 @@ class PomodoroTimer extends StatelessWidget {
               primarySwatch: Colors.red,
             ),
             home: Home(disableNotifications: disableNotifications),
-            routes: getRoutes(context),
+            routes: {
+              '/home': (_) => Home(),
+              '/settings': (_) => Settings(),
+            },
             navigatorObservers: [
               FirebaseAnalyticsObserver(analytics: analytics),
             ],
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+            ],
+            supportedLocales: [
+              Locale('pt', 'BR'),
+            ],
           );
         }
-        return CircularProgressIndicator();
+
+        // TODO - Melhorar a tela branca.
+        return Container(
+          color: Colors.white,
+        );
       },
     );
-  }
-
-  ///
-  ///
-  ///
-  static Map<String, WidgetBuilder> getRoutes(BuildContext context) {
-    return {
-      '/home': (_) => Home(),
-      '/settings': (_) => Settings(),
-    };
   }
 }

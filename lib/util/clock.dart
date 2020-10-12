@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pomodoro/util/Tempo.dart';
+import 'package:pomodoro/util/tempo.dart';
 
 ///
 ///
