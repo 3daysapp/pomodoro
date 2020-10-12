@@ -136,19 +136,15 @@ class _HomeState extends State<Home> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            UserAccountsDrawerHeader(
-              accountName: Text('Pomodoro Timer'),
-              accountEmail: Text('3daysapp.com.br'),
-//              currentAccountPicture: CircleAvatar(
-//                backgroundColor: Colors.black45,
-//                child: Text(
-//                  'PO',
-//                  style: TextStyle(
-//                    color: Colors.white,
-//                    fontSize: 38.0,
-//                  ),
-//                ),
-//              ),
+            Container(
+              color: Colors.red.shade300,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 46.0, bottom: 12.0,),
+                child: Image.asset(
+                  'assets/images/pomodoro_512.png',
+                  height: 100.0,
+                ),
+              ),
             ),
             ListTile(
               key: Key('resetTile'),
