@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:pomodoro/util/config.dart';
 import 'package:pomodoro/util/field_label.dart';
 import 'package:pomodoro/util/timer_widget.dart';
-import 'package:pomodoro/util/Config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
 
@@ -9,6 +9,10 @@ import 'package:wakelock/wakelock.dart';
 ///
 ///
 class Settings extends StatefulWidget {
+
+  ///
+  ///
+  ///
   @override
   _SettingsState createState() => _SettingsState();
 }

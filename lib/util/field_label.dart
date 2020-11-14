@@ -9,7 +9,10 @@ class FieldLabel extends StatelessWidget {
   ///
   ///
   ///
-  const FieldLabel(this.label, {Key key}) : super(key: key);
+  const FieldLabel(
+    this.label, {
+    Key key,
+  }) : super(key: key);
 
   ///
   ///

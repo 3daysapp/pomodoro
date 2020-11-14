@@ -12,7 +12,11 @@ class TimerWidget extends StatelessWidget {
   ///
   ///
   ///
-  TimerWidget(this.millis, {this.callback, Key key}) : super(key: key);
+  TimerWidget(
+    this.millis, {
+    this.callback,
+    Key key,
+  }) : super(key: key);
 
   ///
   ///

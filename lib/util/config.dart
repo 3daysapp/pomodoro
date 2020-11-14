@@ -1,7 +1,12 @@
 ///
 ///
 ///
-enum Status { stopped, task, short, long }
+enum Status {
+  stopped,
+  task,
+  short,
+  long,
+}
 
 ///
 ///

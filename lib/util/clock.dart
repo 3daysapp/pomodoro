@@ -8,7 +8,14 @@ class Clock extends StatelessWidget {
   final int data;
   final int time;
 
-  const Clock({Key key, this.data, this.time}) : super(key: key);
+  ///
+  ///
+  ///
+  const Clock({
+    Key key,
+    this.data,
+    this.time,
+  }) : super(key: key);
 
   ///
   ///
