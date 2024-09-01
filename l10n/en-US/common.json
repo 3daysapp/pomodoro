@@ -2,5 +2,13 @@
   "pomodoro": "Pomodoto Timer",
   "home": "Home",
   "settings": "Settings",
-  "toggleBrightness": "Toggle Brightness"
+  "toggleBrightness": "Toggle Brightness",
+  "task": "Task",
+  "taskDuration": "Task Duration",
+  "shortBreakDuration": "Short Break Duration",
+  "longBreakDuration": "Long Break Duration",
+  "taskQuantity": "Task Quantity",
+  "start": "Start",
+  "pause": "Pause",
+  "stop": "Stop"
 }

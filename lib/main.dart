@@ -1,10 +1,11 @@
+import 'package:duration_picker/localization/localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:i18next/i18next.dart';
-import 'package:pomodoro/config.dart';
+import 'package:pomodoro/utils/config.dart';
 import 'package:pomodoro/firebase_options.dart';
 import 'package:pomodoro/views/home.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -74,6 +75,7 @@ class MyApp extends StatelessWidget {
           ),
           home: const Home(),
           localizationsDelegates: <LocalizationsDelegate<dynamic>>[
+            DurationPickerLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
