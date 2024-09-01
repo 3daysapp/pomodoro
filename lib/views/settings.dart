@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pomodoro/config.dart';
+import 'package:pomodoro/utils/l10n.dart';
 
 ///
 ///
@@ -28,7 +29,7 @@ class _SettingsState extends State<Settings> {
   Widget build(final BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(context.t('settings')),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -36,8 +37,8 @@ class _SettingsState extends State<Settings> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            const Text(
-              'Settings',
+            Text(
+              context.t('settings'),
               textAlign: TextAlign.center,
             ),
             ElevatedButton(
@@ -48,7 +49,7 @@ class _SettingsState extends State<Settings> {
                       : Brightness.dark,
                 );
               },
-              child: const Text('Change Theme'),
+              child: Text(context.t('toggleBrightness')),
             ),
           ],
         ),

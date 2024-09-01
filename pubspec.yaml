@@ -8,6 +8,15 @@ environment:
   sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
+  # https://pub.dev/packages/firebase_analytics
+  firebase_analytics: 11.3.0
+
+  # https://pub.dev/packages/firebase_core
+  firebase_core: 3.4.0
+
+  # https://pub.dev/packages/firebase_crashlytics
+  firebase_crashlytics: 4.1.0
+
   # https://flutter.dev/
   flutter:
     sdk: flutter
@@ -22,9 +31,11 @@ dependencies:
   # https://pub.dev/packages/font_awesome_flutter
   font_awesome_flutter: 10.7.0
 
+  # https://pub.dev/packages/i18next
+  i18next: ^0.7.3
+
   # https://pub.dev/packages/intl
   intl: ^0.19.0
-
 
   # https://pub.dev/packages/package_info_plus
   package_info_plus: ^8.0.2
@@ -70,3 +81,5 @@ flutter:
   assets:
     - assets/
     - assets/images/
+    - l10n/
+    - l10n/en-US/

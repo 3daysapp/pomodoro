@@ -1,5 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:i18next/i18next.dart';
 import 'package:pomodoro/config.dart';
+import 'package:pomodoro/firebase_options.dart';
 import 'package:pomodoro/views/home.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -14,6 +20,26 @@ void main() async {
 
   /// Start the configuration.
   await Config().start();
+
+  /// Firebase initialization.
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Pass all uncaught "fatal" errors from the framework to Crashlytics.
+  FlutterError.onError = (final FlutterErrorDetails errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+
+  // Pass all uncaught asynchronous errors that aren't handled by the Flutter
+  // framework to Crashlytics
+  PlatformDispatcher.instance.onError = (
+    final Object error,
+    final StackTrace stack,
+  ) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
 
   runApp(const MyApp());
 }
@@ -47,6 +73,19 @@ class MyApp extends StatelessWidget {
             brightness: brightness,
           ),
           home: const Home(),
+          localizationsDelegates: <LocalizationsDelegate<dynamic>>[
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            I18NextLocalizationDelegate(
+              locales: Config.supportedLocales,
+              dataSource: AssetBundleLocalizationDataSource(
+                bundlePath: 'l10n',
+              ),
+            ),
+          ],
+          locale: Config().locale,
+          supportedLocales: Config.supportedLocales,
         );
       },
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pomodoro/utils/l10n.dart';
 import 'package:pomodoro/views/settings.dart';
 
 ///
@@ -28,13 +29,13 @@ class _HomeState extends State<Home> {
   Widget build(final BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pomodoro Timer'),
+        title: Text(context.t('pomodoro')),
       ),
       drawer: Drawer(
         child: ListView(
           children: <Widget>[
             ListTile(
-              title: const Text('Settings'),
+              title: Text(context.t('settings')),
               onTap: () async {
                 Navigator.of(context).pop();
                 await Navigator.of(context).push(

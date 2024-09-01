@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,6 +7,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 class Config {
   static final Config _singleton = Config._internal();
+
+  static List<Locale> supportedLocales = <Locale>[
+    const Locale('en', 'US'),
+  ];
 
   ///
   ///
@@ -22,6 +26,8 @@ class Config {
 
   final ValueNotifier<Brightness> brightnessNotifier =
       ValueNotifier<Brightness>(Brightness.light);
+
+  Locale locale = const Locale('en', 'US');
 
   ///
   ///
