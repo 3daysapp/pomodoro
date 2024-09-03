@@ -1,6 +1,7 @@
 name: pomodoro
 description: Super Pomodoro Timer.
 repository: https://github.com/3daysapp/pomodoro/
+publish_to: none
 
 version: 0.0.7+7
 
@@ -9,7 +10,9 @@ environment:
 
 dependencies:
   # https://pub.dev/packages/duration_picker
-  duration_picker: 1.2.0
+  # duration_picker: 1.2.0
+  duration_picker:
+    path: ../../github/duration_picker
 
   # https://pub.dev/packages/firebase_analytics
   firebase_analytics: 11.3.0

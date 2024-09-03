@@ -1,10 +1,10 @@
-import 'dart:math';
-
 import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pomodoro/utils/config.dart';
 import 'package:pomodoro/utils/l10n.dart';
+import 'package:pomodoro/widgets/symbols.dart';
 
 ///
 ///
@@ -26,6 +26,11 @@ class Settings extends StatefulWidget {
 ///
 ///
 class _SettingsState extends State<Settings> {
+  final TextEditingController _controller =
+      TextEditingController(text: Config().taskQuantity.toString());
+  final int _min = 1;
+  final int _max = 20;
+
   ///
   ///
   ///
@@ -38,12 +43,74 @@ class _SettingsState extends State<Settings> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: <Widget>[
+          /// Task Quantity
+          ListTile(
+            title: Row(
+              children: <Widget>[
+                Text('${context.t('taskQuantity')}:'),
+                const SizedBox(width: 16),
+                IconButton(
+                  onPressed: Config().taskQuantity > _min
+                      ? () {
+                          setState(() => Config().taskQuantity--);
+                          _controller.text = Config().taskQuantity.toString();
+                        }
+                      : null,
+                  icon: const Icon(FontAwesomeIcons.minus),
+                ),
+                Flexible(
+                  child: TextField(
+                    controller: _controller,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (final String value) {
+                      int taskQuantity = int.tryParse(value) ?? _min;
+
+                      if (taskQuantity < _min) {
+                        taskQuantity = _min;
+                      }
+
+                      if (taskQuantity > _max) {
+                        taskQuantity = _max;
+                      }
+
+                      setState(() {
+                        Config().taskQuantity = taskQuantity;
+                        _controller.value = TextEditingValue(
+                          text: taskQuantity.toString(),
+                          selection: TextSelection.fromPosition(
+                            TextPosition(
+                              offset: taskQuantity.toString().length,
+                            ),
+                          ),
+                        );
+                      });
+                    },
+                  ),
+                ),
+                IconButton(
+                  onPressed: Config().taskQuantity < _max
+                      ? () {
+                          setState(() => Config().taskQuantity++);
+                          _controller.text = Config().taskQuantity.toString();
+                        }
+                      : null,
+                  icon: const Icon(FontAwesomeIcons.plus),
+                ),
+                Flexible(child: Container()),
+              ],
+            ),
+          ),
+
           /// Task Duration
           ListTile(
-            leading: const Icon(
-              FontAwesomeIcons.solidCircle,
-              color: Colors.deepOrange,
-            ),
+            leading: const TaskSymbol(),
             title: Text(
               '${context.t('taskDuration')}: '
               '${Config().taskDuration.parse()}',
@@ -51,30 +118,21 @@ class _SettingsState extends State<Settings> {
             onTap: () async {
               final Duration? duration = await showDurationPicker(
                 context: context,
-                initialTime: Config().taskDuration,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(24),
+                title: Text(
+                  context.t('taskDuration'),
+                  textAlign: TextAlign.center,
                 ),
+                initialTime: Config().taskDuration,
               );
-
               if (duration != null) {
-                setState(() {
-                  Config().taskDuration = duration;
-                });
+                setState(() => Config().taskDuration = duration);
               }
             },
           ),
 
           /// Short Break Duration
           ListTile(
-            leading: Transform.rotate(
-              angle: 3 / 2 * pi,
-              child: const Icon(
-                FontAwesomeIcons.play,
-                color: Colors.indigoAccent,
-              ),
-            ),
+            leading: const ShortBreakSymbol(),
             title: Text(
               '${context.t('shortBreakDuration')}: '
               '${Config().shortBreakDuration.parse()}',
@@ -82,23 +140,22 @@ class _SettingsState extends State<Settings> {
             onTap: () async {
               final Duration? duration = await showDurationPicker(
                 context: context,
+                title: Text(
+                  context.t('shortBreakDuration'),
+                  textAlign: TextAlign.center,
+                ),
                 initialTime: Config().shortBreakDuration,
               );
 
               if (duration != null) {
-                setState(() {
-                  Config().shortBreakDuration = duration;
-                });
+                setState(() => Config().shortBreakDuration = duration);
               }
             },
           ),
 
           /// Long Break Duration
           ListTile(
-            leading: const Icon(
-              FontAwesomeIcons.solidSquare,
-              color: Colors.lightGreen,
-            ),
+            leading: const LongBreakSymbol(),
             title: Text(
               '${context.t('longBreakDuration')}: '
               '${Config().longBreakDuration.parse()}',
@@ -106,18 +163,18 @@ class _SettingsState extends State<Settings> {
             onTap: () async {
               final Duration? duration = await showDurationPicker(
                 context: context,
+                title: Text(
+                  context.t('longBreakDuration'),
+                  textAlign: TextAlign.center,
+                ),
                 initialTime: Config().longBreakDuration,
               );
 
               if (duration != null) {
-                setState(() {
-                  Config().longBreakDuration = duration;
-                });
+                setState(() => Config().longBreakDuration = duration);
               }
             },
           ),
-
-          // TODO(anyone): Create task quantity.
 
           /// Toggle Brightness
           ListTile(
@@ -138,14 +195,6 @@ class _SettingsState extends State<Settings> {
                     : Brightness.dark,
               );
             },
-          ),
-
-          ElevatedButton(
-            onPressed: () async {
-              await showTimePicker(
-                  context: context, initialTime: TimeOfDay.now());
-            },
-            child: const Text('Test'),
           ),
         ],
       ),

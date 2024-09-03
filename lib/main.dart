@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:i18next/i18next.dart';
-import 'package:pomodoro/utils/config.dart';
 import 'package:pomodoro/firebase_options.dart';
+import 'package:pomodoro/utils/config.dart';
 import 'package:pomodoro/views/home.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -64,7 +64,7 @@ class MyApp extends StatelessWidget {
       builder: (_, final Brightness brightness, __) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Pomodoro Timer',
+          title: 'Super Pomodoro Timer',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.deepOrange,

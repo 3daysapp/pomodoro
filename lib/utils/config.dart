@@ -35,6 +35,7 @@ class Config {
   Duration _taskDuration = const Duration(minutes: 25);
   Duration _shortBreakDuration = const Duration(minutes: 5);
   Duration _longBreakDuration = const Duration(minutes: 15);
+  int _taskQuantity = 4;
 
   ///
   ///
@@ -50,11 +51,25 @@ class Config {
             ? Brightness.dark
             : Brightness.light;
 
-    final int? taskInt = await prefs.getInt('taskDuration');
+    final int? intTaskDuration = await prefs.getInt('taskDuration');
 
-    _taskDuration = taskInt == null
+    _taskDuration = intTaskDuration == null
         ? const Duration(minutes: 25)
-        : Duration(seconds: taskInt);
+        : Duration(seconds: intTaskDuration);
+
+    final int? intShortBreakDuration = await prefs.getInt('shortBreakDuration');
+
+    _shortBreakDuration = intShortBreakDuration == null
+        ? const Duration(minutes: 5)
+        : Duration(seconds: intShortBreakDuration);
+
+    final int? intLongBreakDuration = await prefs.getInt('longBreakDuration');
+
+    _longBreakDuration = intLongBreakDuration == null
+        ? const Duration(minutes: 15)
+        : Duration(seconds: intLongBreakDuration);
+
+    _taskQuantity = await prefs.getInt('taskQuantity') ?? 4;
   }
 
   ///
@@ -112,6 +127,21 @@ class Config {
     _longBreakDuration = duration;
     unawaited(
       SharedPreferencesAsync().setInt('longBreakDuration', duration.inSeconds),
+    );
+  }
+
+  ///
+  ///
+  ///
+  int get taskQuantity => _taskQuantity;
+
+  ///
+  ///
+  ///
+  set taskQuantity(final int quantity) {
+    _taskQuantity = quantity;
+    unawaited(
+      SharedPreferencesAsync().setInt('taskQuantity', quantity),
     );
   }
 }

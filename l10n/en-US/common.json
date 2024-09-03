@@ -1,14 +1,18 @@
 {
-  "pomodoro": "Pomodoto Timer",
+  "pomodoro": "Super Pomodoto Timer",
   "home": "Home",
   "settings": "Settings",
   "toggleBrightness": "Toggle Brightness",
   "task": "Task",
   "taskDuration": "Task Duration",
+  "shortBreak": "Short Break",
   "shortBreakDuration": "Short Break Duration",
+  "longBreak": "Long Break",
   "longBreakDuration": "Long Break Duration",
   "taskQuantity": "Task Quantity",
   "start": "Start",
   "pause": "Pause",
-  "stop": "Stop"
+  "stop": "Stop",
+  "reset": "Reset",
+  "resetConfirmation": "Are you sure to reset the timer?"
 }
