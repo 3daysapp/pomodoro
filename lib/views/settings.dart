@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pomodoro/utils/config.dart';
 import 'package:pomodoro/utils/l10n.dart';
-import 'package:pomodoro/widgets/symbols.dart';
+import 'package:pomodoro/widgets/pomodoro_event.dart';
 
 ///
 ///
@@ -110,7 +110,7 @@ class _SettingsState extends State<Settings> {
 
           /// Task Duration
           ListTile(
-            leading: const TaskSymbol(),
+            leading: const EventWidget(event: PomodoroEvent.task),
             title: Text(
               '${context.t('taskDuration')}: '
               '${Config().taskDuration.parse()}',
@@ -132,7 +132,7 @@ class _SettingsState extends State<Settings> {
 
           /// Short Break Duration
           ListTile(
-            leading: const ShortBreakSymbol(),
+            leading: const EventWidget(event: PomodoroEvent.shortBreak),
             title: Text(
               '${context.t('shortBreakDuration')}: '
               '${Config().shortBreakDuration.parse()}',
@@ -155,7 +155,7 @@ class _SettingsState extends State<Settings> {
 
           /// Long Break Duration
           ListTile(
-            leading: const LongBreakSymbol(),
+            leading: const EventWidget(event: PomodoroEvent.longBreak),
             title: Text(
               '${context.t('longBreakDuration')}: '
               '${Config().longBreakDuration.parse()}',

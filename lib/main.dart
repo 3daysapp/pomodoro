@@ -61,7 +61,7 @@ class MyApp extends StatelessWidget {
   Widget build(final BuildContext context) {
     return ValueListenableBuilder<Brightness>(
       valueListenable: Config().brightnessNotifier,
-      builder: (_, final Brightness brightness, __) {
+      builder: (final _, final Brightness brightness, final __) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Super Pomodoro Timer',

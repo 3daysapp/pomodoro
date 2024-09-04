@@ -2,11 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:pomodoro/utils/config.dart';
 import 'package:pomodoro/utils/l10n.dart';
-import 'package:pomodoro/utils/pomodoro.dart';
+import 'package:pomodoro/utils/pomodoro_controller.dart';
 import 'package:pomodoro/views/settings.dart';
-import 'package:pomodoro/widgets/symbols.dart';
+import 'package:pomodoro/widgets/pomodoro_event.dart';
 
 ///
 ///
@@ -28,6 +27,8 @@ class Home extends StatefulWidget {
 ///
 ///
 class _HomeState extends State<Home> {
+  final PomodoroController _controller = PomodoroController();
+
   ///
   ///
   ///
@@ -40,8 +41,8 @@ class _HomeState extends State<Home> {
   ///
   ///
   ///
-  void updateScreen(final Timer timer) {
-    print(DateTime.now());
+  Future<void> updateScreen(final Timer timer) async {
+    await _controller.update();
     setState(() {});
   }
 
@@ -73,7 +74,7 @@ class _HomeState extends State<Home> {
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(true),
                     child: Text(affirmative),
-                  )
+                  ),
                 ]
               : <Widget>[
                   ElevatedButton(
@@ -94,6 +95,8 @@ class _HomeState extends State<Home> {
   ///
   @override
   Widget build(final BuildContext context) {
+    final PomodoroEvent currentEvent = _controller.currentEvent;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(context.t('pomodoro')),
@@ -108,7 +111,7 @@ class _HomeState extends State<Home> {
                 Navigator.of(context).pop();
                 await Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (_) => const Settings(),
+                    builder: (final BuildContext context) => const Settings(),
                   ),
                 );
                 setState(() {});
@@ -124,7 +127,7 @@ class _HomeState extends State<Home> {
                   context: context,
                   message: context.t('resetConfirmation'),
                 )) {
-                  await Pomodoro().reset();
+                  await _controller.reset();
                   setState(() {});
                 }
               },
@@ -138,19 +141,13 @@ class _HomeState extends State<Home> {
           children: <Widget>[
             Wrap(
               alignment: WrapAlignment.center,
-              crossAxisAlignment: WrapCrossAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.end,
               spacing: 8,
-              children: <Widget>[
-                ...List<List<Widget>>.generate(
-                  Config().taskQuantity - 1,
-                  (final _) => <Widget>[
-                    const TaskSymbol(),
-                    const ShortBreakSymbol(),
-                  ],
-                ).expand((final List<Widget> e) => e),
-                const TaskSymbol(),
-                const LongBreakSymbol(),
-              ],
+              children: _controller.events,
+            ),
+            Text(
+              context.t(currentEvent.name),
+              style: Theme.of(context).textTheme.displaySmall,
             ),
             Expanded(
               child: Stack(
@@ -160,16 +157,16 @@ class _HomeState extends State<Home> {
                   FittedBox(
                     child: CircularProgressIndicator(
                       strokeWidth: 1.5,
-                      value: 0.75,
-                      color: Colors.deepOrange,
-                      backgroundColor: Colors.grey.withAlpha(128),
+                      value: _controller.progress,
+                      color: currentEvent.color,
+                      backgroundColor: Colors.grey.withOpacity(0.5),
                     ),
                   ),
-                  const FittedBox(
+                  FittedBox(
                     child: Align(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4),
-                        child: Text('25:00'),
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Text(_controller.remaining),
                       ),
                     ),
                   ),
@@ -177,10 +174,17 @@ class _HomeState extends State<Home> {
               ),
             ),
             FloatingActionButton(
-              onPressed: () {},
-              backgroundColor: Colors.deepOrange.withAlpha(200),
-              child: const Icon(FontAwesomeIcons.pause),
-            )
+              onPressed: () async {
+                await _controller.playPause();
+                setState(() {});
+              },
+              backgroundColor: currentEvent.color.withOpacity(0.8),
+              child: Icon(
+                _controller.paused
+                    ? FontAwesomeIcons.play
+                    : FontAwesomeIcons.pause,
+              ),
+            ),
           ],
         ),
       ),
