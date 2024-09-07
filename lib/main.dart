@@ -4,6 +4,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_udid/flutter_udid.dart';
 import 'package:i18next/i18next.dart';
 import 'package:pomodoro/firebase_options.dart';
 import 'package:pomodoro/utils/config.dart';
@@ -41,6 +42,8 @@ void main() async {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
+
+  await FirebaseCrashlytics.instance.setUserIdentifier(await FlutterUdid.udid);
 
   runApp(const MyApp());
 }

@@ -1,0 +1,17 @@
+#
+# How to run:
+#
+# dart run flutter_launcher_icons
+#
+flutter_icons:
+  image_path: assets/images/pomodoro_512.png
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  adaptive_icon_background: "#E3E3E5"
+  web:
+    generate: true
+  windows:
+    generate: true
+  macos:
+    generate: true
