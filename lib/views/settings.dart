@@ -176,6 +176,23 @@ class _SettingsState extends State<Settings> {
             },
           ),
 
+          SwitchListTile(
+            title: Row(
+              children: <Widget>[
+                Icon(
+                  Config().playSound
+                      ? FontAwesomeIcons.volumeHigh
+                      : FontAwesomeIcons.volumeXmark,
+                ),
+                const SizedBox(width: 16),
+                Text(context.t('playSound')),
+              ],
+            ),
+            value: Config().playSound,
+            onChanged: (final bool value) =>
+                setState(() => Config().playSound = value),
+          ),
+
           /// Toggle Brightness
           ListTile(
             leading: Config().brightness == Brightness.dark

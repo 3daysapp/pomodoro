@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pomodoro/utils/config.dart';
@@ -10,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 ///
 class PomodoroController {
+  final AudioPlayer player = AudioPlayer();
+  bool _firstStart = false;
   int _startedAt = 0;
   bool _paused = true;
   Duration _remaining = Duration.zero;
@@ -23,6 +26,12 @@ class PomodoroController {
   ///
   ///
   PomodoroController() {
+    _firstStart = true;
+
+    if (kDebugMode) {
+      print('Pomodoro Controller Constructor: ${DateTime.now()}');
+    }
+
     final SharedPreferencesAsync prefs = SharedPreferencesAsync();
 
     unawaited(
@@ -133,6 +142,15 @@ class PomodoroController {
   ///
   ///
   ///
+  Duration get currentDuration => switch (currentEvent) {
+        PomodoroEvent.task => _taskDuration,
+        PomodoroEvent.shortBreak => _shortBreakDuration,
+        PomodoroEvent.longBreak => _longBreakDuration
+      };
+
+  ///
+  ///
+  ///
   List<Widget> get events {
     return List<Widget>.generate(
       _taskQuantity * 2,
@@ -152,14 +170,8 @@ class PomodoroController {
       return null;
     }
 
-    final Duration duration = switch (_getEventType(_currentTask)) {
-      PomodoroEvent.task => _taskDuration,
-      PomodoroEvent.shortBreak => _shortBreakDuration,
-      PomodoroEvent.longBreak => _longBreakDuration
-    };
-
     return 1.0 -
-        _remaining.inSeconds.toDouble() / duration.inSeconds.toDouble();
+        _remaining.inSeconds.toDouble() / currentDuration.inSeconds.toDouble();
   }
 
   ///
@@ -185,43 +197,56 @@ class PomodoroController {
   ///
   ///
   Future<void> update() async {
-    if (kDebugMode) {
-      print('Update: ${DateTime.now()}');
+    if (_firstStart) {
+      _firstStart = false;
+
+      if (!_paused) {
+        final Duration elapsed = Duration(
+          milliseconds: DateTime.now().millisecondsSinceEpoch - _startedAt,
+        );
+
+        if (elapsed >= currentDuration) {
+          _eventFinished();
+        } else {
+          _remaining = currentDuration - elapsed;
+        }
+      }
     }
 
     if (!_paused) {
       if (_startedAt <= 0) {
         _startedAt = DateTime.now().millisecondsSinceEpoch;
-
-        // _remaining = switch (_getEventType(_currentTask)) {
-        //   PomodoroEvent.task => _taskDuration,
-        //   PomodoroEvent.shortBreak => _shortBreakDuration,
-        //   PomodoroEvent.longBreak => _longBreakDuration
-        // };
       }
 
       _remaining = _remaining - const Duration(seconds: 1);
 
       if (_remaining.inSeconds <= 0) {
-        _currentTask++;
+        _eventFinished();
 
-        if (_currentTask >= _taskQuantity * 2) {
-          _currentTask = 0;
-        }
-
-        _remaining = switch (_getEventType(_currentTask)) {
-          PomodoroEvent.task => _taskDuration,
-          PomodoroEvent.shortBreak => _shortBreakDuration,
-          PomodoroEvent.longBreak => _longBreakDuration
-        };
-
-        _startedAt = 0;
-        _paused = true;
         // TODO(edufolly): Play sound
+        if (Config().playSound) {
+          unawaited(player.play(AssetSource('sounds/alarm.mp3')));
+        }
       }
 
       await _persist();
     }
+  }
+
+  ///
+  ///
+  ///
+  void _eventFinished() {
+    _currentTask++;
+
+    if (_currentTask >= _taskQuantity * 2) {
+      _paused = true;
+      _currentTask = 0;
+    }
+
+    _remaining = currentDuration;
+    _startedAt = 0;
+    _paused = true;
   }
 
   ///
@@ -232,6 +257,10 @@ class PomodoroController {
       _paused = false;
     } else {
       _paused = true;
+      if (_startedAt > 0) {
+        _startedAt =
+            DateTime.now().millisecondsSinceEpoch - _remaining.inMilliseconds;
+      }
     }
 
     await _persist();

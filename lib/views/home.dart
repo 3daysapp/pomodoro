@@ -100,12 +100,20 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: Text(context.t('pomodoro')),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(FontAwesomeIcons.boltLightning),
+            onPressed: _reset,
+            tooltip: context.t('reset'),
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
           children: <Widget>[
             /// Settings
             ListTile(
+              leading: const Icon(FontAwesomeIcons.wrench),
               title: Text(context.t('settings')),
               onTap: () async {
                 Navigator.of(context).pop();
@@ -120,16 +128,11 @@ class _HomeState extends State<Home> {
 
             /// Reset
             ListTile(
+              leading: const Icon(FontAwesomeIcons.boltLightning),
               title: Text(context.t('reset')),
               onTap: () async {
                 Navigator.of(context).pop();
-                if (await yesNoDialog(
-                  context: context,
-                  message: context.t('resetConfirmation'),
-                )) {
-                  await _controller.reset();
-                  setState(() {});
-                }
+                await _reset();
               },
             ),
           ],
@@ -189,5 +192,18 @@ class _HomeState extends State<Home> {
         ),
       ),
     );
+  }
+
+  ///
+  ///
+  ///
+  Future<void> _reset() async {
+    if (await yesNoDialog(
+      context: context,
+      message: context.t('resetConfirmation'),
+    )) {
+      await _controller.reset();
+      setState(() {});
+    }
   }
 }

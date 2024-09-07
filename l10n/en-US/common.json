@@ -14,5 +14,6 @@
   "pause": "Pause",
   "stop": "Stop",
   "reset": "Reset",
-  "resetConfirmation": "Are you sure to reset the timer?"
+  "resetConfirmation": "Are you sure to reset the timer?",
+  "playSound": "Play Sound"
 }

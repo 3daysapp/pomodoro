@@ -9,6 +9,9 @@ environment:
   sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
+  # https://pub.dev/packages/audioplayers
+  audioplayers: 6.1.0
+
   # https://pub.dev/packages/duration_picker
   # duration_picker: 1.2.0
   duration_picker:
@@ -85,5 +88,6 @@ flutter:
   assets:
     - assets/
     - assets/images/
+    - assets/sounds/
     - l10n/
     - l10n/en-US/

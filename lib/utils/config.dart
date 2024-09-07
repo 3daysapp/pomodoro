@@ -36,6 +36,7 @@ class Config {
   Duration _shortBreakDuration = const Duration(minutes: 5);
   Duration _longBreakDuration = const Duration(minutes: 15);
   int _taskQuantity = 4;
+  bool _playSound = true;
 
   ///
   ///
@@ -70,6 +71,8 @@ class Config {
         : Duration(seconds: intLongBreakDuration);
 
     _taskQuantity = await prefs.getInt('taskQuantity') ?? 4;
+
+    _playSound = await prefs.getBool('playSound') ?? true;
   }
 
   ///
@@ -142,6 +145,21 @@ class Config {
     _taskQuantity = quantity;
     unawaited(
       SharedPreferencesAsync().setInt('taskQuantity', quantity),
+    );
+  }
+
+  ///
+  ///
+  ///
+  bool get playSound => _playSound;
+
+  ///
+  ///
+  ///
+  set playSound(final bool play) {
+    _playSound = play;
+    unawaited(
+      SharedPreferencesAsync().setBool('playSound', play),
     );
   }
 }
