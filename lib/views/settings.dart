@@ -176,6 +176,7 @@ class _SettingsState extends State<Settings> {
             },
           ),
 
+          /// Play Sound
           SwitchListTile(
             title: Row(
               children: <Widget>[

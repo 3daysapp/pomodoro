@@ -237,6 +237,7 @@ class _HomeState extends State<Home> {
                   await _controller.playPause();
                   setState(() {});
                 },
+                tooltip: context.t(_controller.paused ? 'play' : 'pause'),
                 backgroundColor: currentEvent.color.withOpacity(0.8),
                 child: Icon(
                   _controller.paused
