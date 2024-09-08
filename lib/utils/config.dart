@@ -86,9 +86,13 @@ class Config {
   ///
   ///
   ///
-  Future<void> setBrightness(final Brightness brightness) async {
-    brightnessNotifier.value = brightness;
-    await SharedPreferencesAsync().setString('brightness', brightness.name);
+  void toggleBrightness() {
+    brightnessNotifier.value =
+        brightness == Brightness.dark ? Brightness.light : Brightness.dark;
+
+    unawaited(
+      SharedPreferencesAsync().setString('brightness', brightness.name),
+    );
   }
 
   ///

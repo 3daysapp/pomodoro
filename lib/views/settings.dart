@@ -224,13 +224,7 @@ class _SettingsState extends State<Settings> {
                     color: Colors.black87,
                   ),
             title: Text(context.t('toggleBrightness')),
-            onTap: () async {
-              await Config().setBrightness(
-                Config().brightness == Brightness.dark
-                    ? Brightness.light
-                    : Brightness.dark,
-              );
-            },
+            onTap: Config().toggleBrightness,
           ),
         ],
       ),
