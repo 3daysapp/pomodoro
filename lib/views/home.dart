@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pomodoro/utils/l10n.dart';
@@ -101,6 +102,17 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         title: Text(context.t('pomodoro')),
         actions: <Widget>[
+          if (kDebugMode)
+            IconButton(
+              icon: const Icon(
+                FontAwesomeIcons.wrench,
+                color: Colors.transparent,
+              ),
+              onPressed: () async {
+                _controller.next();
+                setState(() {});
+              },
+            ),
           IconButton(
             icon: const Icon(FontAwesomeIcons.boltLightning),
             onPressed: _reset,
@@ -139,56 +151,65 @@ class _HomeState extends State<Home> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          children: <Widget>[
-            Wrap(
-              alignment: WrapAlignment.center,
-              crossAxisAlignment: WrapCrossAlignment.end,
-              spacing: 8,
-              children: _controller.events,
-            ),
-            Text(
-              context.t(currentEvent.name),
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                alignment: Alignment.center,
-                children: <Widget>[
-                  FittedBox(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 1.5,
-                      value: _controller.progress,
-                      color: currentEvent.color,
-                      backgroundColor: Colors.grey.withOpacity(0.5),
-                    ),
-                  ),
-                  FittedBox(
-                    child: Align(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Text(_controller.remaining),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        child: Center(
+          child: Column(
+            // crossAxisAlignment: CrossAxisAlignment.stretch,
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
+                children: _controller.events,
+              ),
+              Text(
+                context.t(currentEvent.name),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.displaySmall,
+              ),
+              const SizedBox(height: 16, width: 1),
+              Expanded(
+                child: FittedBox(
+                  child: SizedBox(
+                    height: 40,
+                    width: 40,
+                    child: FittedBox(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          CircularProgressIndicator(
+                            strokeWidth: 1.5,
+                            value: _controller.progress,
+                            color: currentEvent.color,
+                            backgroundColor: Colors.grey.withOpacity(0.5),
+                          ),
+                          Text(
+                            _controller.remaining,
+                            textScaler: const TextScaler.linear(0.68),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-            FloatingActionButton(
-              onPressed: () async {
-                await _controller.playPause();
-                setState(() {});
-              },
-              backgroundColor: currentEvent.color.withOpacity(0.8),
-              child: Icon(
-                _controller.paused
-                    ? FontAwesomeIcons.play
-                    : FontAwesomeIcons.pause,
+              const SizedBox(height: 16, width: 1),
+              FloatingActionButton(
+                onPressed: () async {
+                  await _controller.playPause();
+                  setState(() {});
+                },
+                backgroundColor: currentEvent.color.withOpacity(0.8),
+                child: Icon(
+                  _controller.paused
+                      ? FontAwesomeIcons.play
+                      : FontAwesomeIcons.pause,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

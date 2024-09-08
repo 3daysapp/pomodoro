@@ -28,10 +28,6 @@ class PomodoroController {
   PomodoroController() {
     _firstStart = true;
 
-    if (kDebugMode) {
-      print('Pomodoro Controller Constructor: ${DateTime.now()}');
-    }
-
     final SharedPreferencesAsync prefs = SharedPreferencesAsync();
 
     unawaited(
@@ -311,5 +307,14 @@ class PomodoroController {
       'pomodoroCurrentTask',
       _currentTask,
     );
+  }
+
+  ///
+  ///
+  ///
+  void next() {
+    if (kDebugMode) {
+      _remaining = const Duration(seconds: 2);
+    }
   }
 }
