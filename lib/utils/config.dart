@@ -37,6 +37,7 @@ class Config {
   Duration _longBreakDuration = const Duration(minutes: 15);
   int _taskQuantity = 4;
   bool _playSound = true;
+  bool _autoPause = true;
 
   ///
   ///
@@ -73,6 +74,8 @@ class Config {
     _taskQuantity = await prefs.getInt('taskQuantity') ?? 4;
 
     _playSound = await prefs.getBool('playSound') ?? true;
+
+    _autoPause = await prefs.getBool('autoPause') ?? true;
   }
 
   ///
@@ -160,6 +163,21 @@ class Config {
     _playSound = play;
     unawaited(
       SharedPreferencesAsync().setBool('playSound', play),
+    );
+  }
+
+  ///
+  ///
+  ///
+  bool get autoPause => _autoPause;
+
+  ///
+  ///
+  ///
+  set autoPause(final bool pause) {
+    _autoPause = pause;
+    unawaited(
+      SharedPreferencesAsync().setBool('autoPause', pause),
     );
   }
 }

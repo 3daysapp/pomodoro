@@ -194,6 +194,24 @@ class _SettingsState extends State<Settings> {
                 setState(() => Config().playSound = value),
           ),
 
+          /// Auto Pause
+          SwitchListTile(
+            title: Row(
+              children: <Widget>[
+                Icon(
+                  Config().autoPause
+                      ? FontAwesomeIcons.solidCirclePause
+                      : FontAwesomeIcons.circlePause,
+                ),
+                const SizedBox(width: 16),
+                Text(context.t('autoPause')),
+              ],
+            ),
+            value: Config().autoPause,
+            onChanged: (final bool value) =>
+                setState(() => Config().autoPause = value),
+          ),
+
           /// Toggle Brightness
           ListTile(
             leading: Config().brightness == Brightness.dark

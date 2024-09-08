@@ -15,5 +15,6 @@
   "reset": "Reset",
   "resetConfirmation": "Are you sure to reset the timer?",
   "playSound": "Play Sound",
-  "version": "Version: {{version}}"
+  "version": "Version: {{version}}",
+  "autoPause": "Auto Pause"
 }

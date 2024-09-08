@@ -15,7 +15,7 @@ class PomodoroController {
   bool _firstStart = false;
   int _startedAt = 0;
   bool _paused = true;
-  Duration _remaining = Duration.zero;
+  Duration _remaining = const Duration(minutes: 25);
   int _currentTask = 0;
   Duration _taskDuration = const Duration(minutes: 25);
   Duration _shortBreakDuration = const Duration(minutes: 5);
@@ -44,8 +44,9 @@ class PomodoroController {
 
     unawaited(
       prefs.getInt('pomodoroRemaining').then(
-            (final int? value) => _remaining =
-                value == null ? Duration.zero : Duration(seconds: value),
+            (final int? value) => _remaining = value == null
+                ? const Duration(minutes: 25)
+                : Duration(seconds: value),
           ),
     );
 
@@ -219,7 +220,6 @@ class PomodoroController {
       if (_remaining.inSeconds <= 0) {
         _eventFinished();
 
-        // TODO(edufolly): Play sound
         if (Config().playSound) {
           unawaited(player.play(AssetSource('sounds/alarm.mp3')));
         }
@@ -242,7 +242,10 @@ class PomodoroController {
 
     _remaining = currentDuration;
     _startedAt = 0;
-    _paused = true;
+
+    if (Config().autoPause) {
+      _paused = true;
+    }
   }
 
   ///
@@ -250,6 +253,10 @@ class PomodoroController {
   ///
   Future<void> playPause() async {
     if (_paused) {
+      if (player.state == PlayerState.playing) {
+        unawaited(player.stop());
+      }
+
       _paused = false;
     } else {
       _paused = true;
