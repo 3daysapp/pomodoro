@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pomodoro/utils/l10n.dart';
 import 'package:pomodoro/utils/pomodoro_controller.dart';
 import 'package:pomodoro/views/settings.dart';
@@ -121,30 +122,65 @@ class _HomeState extends State<Home> {
         ],
       ),
       drawer: Drawer(
-        child: ListView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
-            /// Settings
-            ListTile(
-              leading: const Icon(FontAwesomeIcons.wrench),
-              title: Text(context.t('settings')),
-              onTap: () async {
-                Navigator.of(context).pop();
-                await Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (final BuildContext context) => const Settings(),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView(
+                children: <Widget>[
+                  /// Settings
+                  ListTile(
+                    leading: const Icon(FontAwesomeIcons.wrench),
+                    title: Text(context.t('settings')),
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      await Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (final BuildContext context) =>
+                              const Settings(),
+                        ),
+                      );
+                      setState(() {});
+                    },
                   ),
-                );
-                setState(() {});
-              },
-            ),
 
-            /// Reset
-            ListTile(
-              leading: const Icon(FontAwesomeIcons.boltLightning),
-              title: Text(context.t('reset')),
-              onTap: () async {
-                Navigator.of(context).pop();
-                await _reset();
+                  /// Reset
+                  ListTile(
+                    leading: const Icon(FontAwesomeIcons.boltLightning),
+                    title: Text(context.t('reset')),
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      await _reset();
+                    },
+                  ),
+                ],
+              ),
+            ),
+            // Text('Version: 1.0.0'),
+            FutureBuilder<PackageInfo>(
+              // FutureBuilder is not used for this?
+              // ignore: discarded_futures
+              future: PackageInfo.fromPlatform(),
+              builder: (
+                final BuildContext context,
+                final AsyncSnapshot<PackageInfo> snapshot,
+              ) {
+                if (snapshot.hasData) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 8, 8),
+                    child: Text(
+                      context.t(
+                        'version',
+                        variables: <String, String>{
+                          'version': snapshot.data!.version,
+                        },
+                      ),
+                    ),
+                  );
+                } else {
+                  return const SizedBox.shrink();
+                }
               },
             ),
           ],
