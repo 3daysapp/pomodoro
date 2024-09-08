@@ -43,7 +43,11 @@ void main() async {
     return true;
   };
 
-  await FirebaseCrashlytics.instance.setUserIdentifier(await FlutterUdid.udid);
+  if (!kIsWeb) {
+    await FirebaseCrashlytics.instance.setUserIdentifier(
+      await FlutterUdid.udid,
+    );
+  }
 
   runApp(const MyApp());
 }

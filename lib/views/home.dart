@@ -205,33 +205,34 @@ class _HomeState extends State<Home> {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.displaySmall,
               ),
-              const SizedBox(height: 16, width: 1),
               Expanded(
                 child: FittedBox(
-                  child: SizedBox(
-                    height: 40,
-                    width: 40,
-                    child: FittedBox(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: <Widget>[
-                          CircularProgressIndicator(
-                            strokeWidth: 1.5,
-                            value: _controller.progress,
-                            color: currentEvent.color,
-                            backgroundColor: Colors.grey.withOpacity(0.5),
-                          ),
-                          Text(
-                            _controller.remaining,
-                            textScaler: const TextScaler.linear(0.68),
-                          ),
-                        ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: SizedBox(
+                      height: 40,
+                      width: 40,
+                      child: FittedBox(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: <Widget>[
+                            CircularProgressIndicator(
+                              strokeWidth: 1.5,
+                              value: _controller.progress,
+                              color: currentEvent.color,
+                              backgroundColor: Colors.grey.withOpacity(0.5),
+                            ),
+                            Text(
+                              _controller.remaining,
+                              textScaler: const TextScaler.linear(0.68),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16, width: 1),
               FloatingActionButton(
                 onPressed: () async {
                   await _controller.playPause();
