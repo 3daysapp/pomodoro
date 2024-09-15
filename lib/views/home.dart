@@ -157,7 +157,6 @@ class _HomeState extends State<Home> {
                 ],
               ),
             ),
-            // Text('Version: 1.0.0'),
             FutureBuilder<PackageInfo>(
               // FutureBuilder is not used for this?
               // ignore: discarded_futures
@@ -173,7 +172,7 @@ class _HomeState extends State<Home> {
                       context.t(
                         'version',
                         variables: <String, String>{
-                          'version': snapshot.data!.version,
+                          'version': snapshot.data?.version ?? 'ERROR',
                         },
                       ),
                     ),
