@@ -219,7 +219,8 @@ class _HomeState extends State<Home> {
                               strokeWidth: 1.5,
                               value: _controller.progress,
                               color: currentEvent.color,
-                              backgroundColor: Colors.grey.withOpacity(0.5),
+                              backgroundColor:
+                                  Colors.grey.withValues(alpha: 0.5),
                             ),
                             Text(
                               _controller.remaining,
@@ -238,7 +239,7 @@ class _HomeState extends State<Home> {
                   setState(() {});
                 },
                 tooltip: context.t(_controller.paused ? 'play' : 'pause'),
-                backgroundColor: currentEvent.color.withOpacity(0.8),
+                backgroundColor: currentEvent.color.withValues(alpha: 0.8),
                 child: Icon(
                   _controller.paused
                       ? FontAwesomeIcons.play
