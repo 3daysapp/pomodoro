@@ -1,90 +1,100 @@
-import 'dart:async';
-
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_analytics/observer.dart';
+import 'package:duration_picker/localization/localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_udid/flutter_udid.dart';
-import 'package:pomodoro/util/config.dart';
-import 'package:pomodoro/view/home.dart';
-import 'package:pomodoro/view/settings.dart';
+import 'package:i18next/i18next.dart';
+import 'package:pomodoro/firebase_options.dart';
+import 'package:pomodoro/utils/config.dart';
+import 'package:pomodoro/views/home.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 ///
 ///
 ///
 void main() async {
-  bool debug = false;
-  assert(debug = true);
-  Config config = Config();
-  config.debug = debug;
-
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp();
+  /// Keep the screen on.
+  await WakelockPlus.enable();
 
-  if (debug) {
-    runApp(PomodoroTimer());
-  } else {
-    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
+  /// Start the configuration.
+  await Config().start();
 
-    runZonedGuarded(() {
-      runApp(PomodoroTimer());
-    }, FirebaseCrashlytics.instance.recordError);
+  /// Firebase initialization.
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Pass all uncaught "fatal" errors from the framework to Crashlytics.
+  FlutterError.onError = (final FlutterErrorDetails errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+
+  // Pass all uncaught asynchronous errors that aren't handled by the Flutter
+  // framework to Crashlytics
+  PlatformDispatcher.instance.onError = (
+    final Object error,
+    final StackTrace stack,
+  ) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
+  if (!kIsWeb) {
+    await FirebaseCrashlytics.instance.setUserIdentifier(
+      await FlutterUdid.udid,
+    );
   }
+
+  runApp(const MyApp());
 }
 
 ///
 ///
 ///
-class PomodoroTimer extends StatelessWidget {
-  final bool disableNotifications;
-
-  static FirebaseAnalytics analytics = FirebaseAnalytics();
-
-  const PomodoroTimer({Key key, this.disableNotifications = false})
-      : super(key: key);
+class MyApp extends StatelessWidget {
+  ///
+  ///
+  ///
+  const MyApp({super.key});
 
   ///
   ///
   ///
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-      future: FlutterUdid.consistentUdid,
-      builder: (context, snapshot) {
-        if (snapshot.hasData || snapshot.hasError) {
-          if (snapshot.hasData) {
-            FirebaseCrashlytics.instance.setUserIdentifier(snapshot.data);
-          }
-
-          return MaterialApp(
-            title: 'Pomodoro Timer',
-            theme: ThemeData(
-              primarySwatch: Colors.red,
+  Widget build(final BuildContext context) {
+    return ValueListenableBuilder<Brightness>(
+      valueListenable: Config().brightnessNotifier,
+      builder: (final _, final Brightness brightness, final __) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Super Pomodoro Timer',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.deepOrange,
+              brightness: brightness,
             ),
-            home: Home(disableNotifications: disableNotifications),
-            routes: {
-              '/home': (_) => Home(),
-              '/settings': (_) => Settings(),
-            },
-            navigatorObservers: [
-              FirebaseAnalyticsObserver(analytics: analytics),
-            ],
-            localizationsDelegates: [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-            ],
-            supportedLocales: [
-              Locale('pt', 'BR'),
-            ],
-          );
-        }
-
-        // TODO - Melhorar a tela branca.
-        return Container(
-          color: Colors.white,
+            useMaterial3: true,
+            brightness: brightness,
+          ),
+          home: const Home(),
+          localizationsDelegates: <LocalizationsDelegate<dynamic>>[
+            DurationPickerLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            I18NextLocalizationDelegate(
+              locales: Config.supportedLocales,
+              dataSource: AssetBundleLocalizationDataSource(
+                bundlePath: 'l10n',
+              ),
+            ),
+          ],
+          locale: Config().locale,
+          supportedLocales: Config.supportedLocales,
         );
       },
     );

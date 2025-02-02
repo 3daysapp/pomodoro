@@ -1,0 +1,20 @@
+{
+  "pomodoro": "Super Pomodoro Timer",
+  "home": "Home",
+  "settings": "Settings",
+  "toggleBrightness": "Toggle Brightness",
+  "task": "Task",
+  "taskDuration": "Task Duration",
+  "shortBreak": "Short Break",
+  "shortBreakDuration": "Short Break Duration",
+  "longBreak": "Long Break",
+  "longBreakDuration": "Long Break Duration",
+  "taskQuantity": "Task Quantity",
+  "play": "Play",
+  "pause": "Pause",
+  "reset": "Reset",
+  "resetConfirmation": "Are you sure to reset the timer?",
+  "playSound": "Play Sound",
+  "version": "Version: {{version}}",
+  "autoPause": "Auto Pause"
+}

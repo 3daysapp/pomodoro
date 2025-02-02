@@ -1,2 +1,0 @@
-json_key_file("~/3daysapp/3daysapp-service-account.json")
-package_name("br.com.threedaysapp.pomodoro")
